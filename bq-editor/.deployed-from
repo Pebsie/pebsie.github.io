@@ -1,3 +1,3 @@
-Copy of https://github.com/Pebsie/brawlquest-editor (commit 23b2372), served at tomlock.me/bq-editor/.
-Update: copy the editor's index.html, app.js, db.js, mobs.js, mobsim.js, style.css, README.md, vendor/ and assets/ over this folder.
+Copy of https://github.com/Pebsie/brawlquest-editor (commit 8c61dfd), served at tomlock.me/bq-editor/.
+Update: copy the editor's index.html, app.js, db.js, mobs.js, mobsim.js, effects.js, style.css, README.md, vendor/ and assets/ over this folder.
 The previous editor is at tomlock.me/brawlquest-editor/legacy/.
