@@ -65,27 +65,40 @@ test('killer bloodpoints cap at 10 and a 4K reaches 50', function () {
   assert.strictEqual(zeroKills.total, 0);
 });
 
-test('survivor cap is 20, escape is 6, and a full escape adds 8', function () {
-  var alone = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: true, allSurvivorsEscaped: false });
+test('survivor cap is 20, and escapes scale by how many others got out', function () {
+  var alone = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: true, othersEscaped: 0 });
   assert.strictEqual(alone.bpPoints, 20);
-  assert.strictEqual(alone.escapePoints, 6);
+  assert.strictEqual(alone.escapePoints, 8);
   assert.strictEqual(alone.bonus, 0);
-  assert.strictEqual(alone.total, 26);
+  assert.strictEqual(alone.total, 28);
+  assert.ok(alone.lines.some(function (line) { return line === 'Escaped +8.'; }));
 
-  var full = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: true, allSurvivorsEscaped: true });
-  assert.strictEqual(full.total, 34);
+  var pair = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: true, othersEscaped: 1 });
+  assert.strictEqual(pair.escapePoints, 12);
+  assert.strictEqual(pair.total, 32);
+  assert.ok(pair.lines.some(function (line) { return line === '1 other survivor escaped +4.'; }));
+
+  var three = S.scoreEntry({ role: 'survivor', bloodpoints: 0, escaped: true, othersEscaped: 2 });
+  assert.strictEqual(three.escapePoints, 16);
+  assert.strictEqual(three.total, 16);
+
+  var full = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: true, othersEscaped: 3 });
+  assert.strictEqual(full.escapePoints, 20);
+  assert.strictEqual(full.total, 40);
   assert.strictEqual(full.total, S.SURVIVOR_GAME_MAX);
-  assert.strictEqual(full.bonus, 8);
+  assert.ok(full.lines.some(function (line) { return line === '3 other survivors escaped × 4 = 12.'; }));
 
-  var dead = S.scoreEntry({ role: 'survivor', bloodpoints: 0, escaped: false, allSurvivorsEscaped: false });
+  var dead = S.scoreEntry({ role: 'survivor', bloodpoints: 0, escaped: false, othersEscaped: 3 });
+  assert.strictEqual(dead.escapePoints, 0);
   assert.strictEqual(dead.total, 0);
+  assert.ok(dead.lines.some(function (line) { return line === 'Did not escape.'; }));
 
-  var richDead = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: false, allSurvivorsEscaped: false });
+  var richDead = S.scoreEntry({ role: 'survivor', bloodpoints: 40000, escaped: false, othersEscaped: 3 });
   assert.strictEqual(richDead.total, 20);
 
-  var odd = S.scoreEntry({ role: 'survivor', bloodpoints: 39000, escaped: true, allSurvivorsEscaped: false });
+  var odd = S.scoreEntry({ role: 'survivor', bloodpoints: 39000, escaped: true, othersEscaped: 0 });
   assert.strictEqual(odd.bpRaw, 20);
-  assert.strictEqual(odd.total, 26);
+  assert.strictEqual(odd.total, 28);
 });
 
 test('a game scores the killer and the survivors from the same result', function () {
@@ -110,13 +123,15 @@ test('a game scores the killer and the survivors from the same result', function
     })
   });
   assert.strictEqual(flight.allSurvivorsEscaped, true);
+  assert.strictEqual(flight.escapeCount, 4);
   assert.strictEqual(flight.rows.filter(function (row) { return row.playerId === 'a'; })[0].total, 10);
   flight.rows.filter(function (row) { return row.playerId !== 'a'; }).forEach(function (row) {
-    assert.strictEqual(row.total, 34);
+    assert.strictEqual(row.escapePoints, 20);
+    assert.strictEqual(row.total, 40);
   });
 });
 
-test('three survivors who all escape still take the escape bonus', function () {
+test('three survivors who all escape score 16 each', function () {
   var game = S.scoreGame({
     killerId: 'k',
     entries: [
@@ -127,10 +142,11 @@ test('three survivors who all escape still take the escape bonus', function () {
     ]
   });
   assert.strictEqual(game.allSurvivorsEscaped, true);
-  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'a'; })[0].total, 14);
+  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'a'; })[0].total, 16);
+  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'a'; })[0].escapePoints, 16);
 });
 
-test('a partial escape does not pay the bonus, and a 4K can sit beside one escape', function () {
+test('one escape scores 8, two score 12 each, and a 4K can sit beside one escape', function () {
   var players = ['k', 'a', 'b', 'c', 'd', 'e'];
   var game = S.scoreGame({
     killerId: 'k',
@@ -144,16 +160,39 @@ test('a partial escape does not pay the bonus, and a 4K can sit beside one escap
     })
   });
   assert.strictEqual(game.allSurvivorsEscaped, false);
+  assert.strictEqual(game.escapeCount, 1);
   assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'k'; })[0].total, 40);
-  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'e'; })[0].total, 6);
+  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'e'; })[0].escapePoints, 8);
+  assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'e'; })[0].total, 8);
   assert.strictEqual(game.rows.filter(function (row) { return row.playerId === 'a'; })[0].total, 0);
+
+  var pair = S.scoreGame({
+    killerId: 'k',
+    entries: players.map(function (id) {
+      return {
+        playerId: id,
+        bloodpoints: 0,
+        kills: 0,
+        escaped: id === 'd' || id === 'e'
+      };
+    })
+  });
+  assert.strictEqual(pair.escapeCount, 2);
+  ['d', 'e'].forEach(function (id) {
+    var row = pair.rows.filter(function (item) { return item.playerId === id; })[0];
+    assert.strictEqual(row.escapePoints, 12);
+    assert.strictEqual(row.total, 12);
+  });
+  assert.strictEqual(pair.rows.filter(function (row) { return row.playerId === 'a'; })[0].escapePoints, 0);
 });
 
-test('186 is one 4K plus four full escapes, and the mark matches the caps', function () {
+test('210 is one 4K plus four full escapes, and the mark matches the caps', function () {
   assert.strictEqual(S.KILLER_GAME_MAX, 10 + (4 * 8) + 8);
-  assert.strictEqual(S.SURVIVOR_GAME_MAX, 20 + 6 + 8);
+  assert.strictEqual(S.ESCAPE_POINT, 8);
+  assert.strictEqual(S.ESCAPE_OTHER, 4);
+  assert.strictEqual(S.SURVIVOR_GAME_MAX, 20 + 8 + (3 * 4));
   assert.strictEqual(S.TOURNAMENT_MARK, S.KILLER_GAME_MAX + (4 * S.SURVIVOR_GAME_MAX));
-  assert.strictEqual(S.TOURNAMENT_MARK, 186);
+  assert.strictEqual(S.TOURNAMENT_MARK, 210);
 
   var ids = ['a', 'b', 'c', 'd', 'e'];
   var players = ids.map(function (id) { return { id: id, name: id.toUpperCase() }; });
@@ -175,12 +214,12 @@ test('186 is one 4K plus four full escapes, and the mark matches the caps', func
   var board = S.standings(players, games, null);
   var rowA = board.rows.filter(function (row) { return row.player.id === 'a'; })[0];
   var rowB = board.rows.filter(function (row) { return row.player.id === 'b'; })[0];
-  assert.strictEqual(rowA.total, 186);
+  assert.strictEqual(rowA.total, 210);
   assert.strictEqual(rowA.games[0].gained, 50);
-  assert.strictEqual(rowA.games[1].gained, 34);
+  assert.strictEqual(rowA.games[1].gained, 40);
   assert.strictEqual(rowA.games[0].cumulative, 50);
-  assert.strictEqual(rowA.games[4].cumulative, 186);
-  assert.strictEqual(rowB.total, 132);
+  assert.strictEqual(rowA.games[4].cumulative, 210);
+  assert.strictEqual(rowB.total, 150);
   assert.strictEqual(rowA.rank, 1);
   assert.strictEqual(board.tiedForFirst, false);
 });
@@ -325,13 +364,100 @@ test('import, export and the compact share shape round-trip', function () {
   }, /40,000/);
 });
 
-test('an empty ledger is not a tie, and progress is measured towards 186', function () {
+test('an empty ledger is not a tie, and progress is measured towards 210', function () {
   var players = [{ id: 'a', name: '' }, { id: 'b', name: 'B' }];
   var empty = S.standings(players, [], null);
   assert.strictEqual(empty.tiedForFirst, false);
   assert.strictEqual(empty.rows[0].progress, 0);
   var scored = S.scoreEntry({ role: 'killer', bloodpoints: 40000, kills: 4 });
-  assert.strictEqual(scored.total / S.TOURNAMENT_MARK, 50 / 186);
+  assert.strictEqual(scored.total / S.TOURNAMENT_MARK, 50 / 210);
+});
+
+test('a scoreboard saved under the previous rules still loads and is rescored', function () {
+  var legacyExport = {
+    version: 1,
+    title: 'Friday night trial',
+    players: [
+      { id: 'rowan', name: 'Rowan' },
+      { id: 'alex', name: 'Alex' },
+      { id: 'sam', name: 'Sam' },
+      { id: 'jordan', name: 'Jordan' },
+      { id: 'casey', name: 'Casey' }
+    ],
+    games: [{
+      id: 'g1',
+      killerId: 'rowan',
+      entries: [
+        { playerId: 'rowan', bloodpoints: 24000, kills: 2, escaped: false },
+        { playerId: 'alex', bloodpoints: 30000, kills: 0, escaped: true },
+        { playerId: 'sam', bloodpoints: 18000, kills: 0, escaped: false },
+        { playerId: 'jordan', bloodpoints: 40000, kills: 0, escaped: true },
+        { playerId: 'casey', bloodpoints: 8000, kills: 0, escaped: false }
+      ]
+    }],
+    tiebreak: {
+      playerA: 'jordan',
+      playerB: 'casey',
+      rounds: [{ winnerId: 'jordan', timeSeconds: 38.2 }]
+    },
+    note: 'Every 2,000 bloodpoints is 1 point, rounded to the nearest 2,000. Killer bloodpoint points are capped at 10. Survivor bloodpoint points are capped at 20. Each kill is +8. Escaping is +6. A 4K is +8. Every survivor escaping is +8 for each survivor. Five-game mark: 186.'
+  };
+  var loaded = S.importState(legacyExport);
+  assert.strictEqual(loaded.version, 1);
+  assert.strictEqual(loaded.title, 'Friday night trial');
+  assert.strictEqual(loaded.players.length, 5);
+  assert.strictEqual(loaded.players[3].name, 'Jordan');
+  assert.strictEqual(loaded.games.length, 1);
+  assert.strictEqual(loaded.games[0].entries[0].bloodpoints, 24000);
+  assert.strictEqual(loaded.games[0].entries[0].kills, 2);
+  assert.strictEqual(loaded.games[0].entries[1].escaped, true);
+  assert.strictEqual(loaded.games[0].entries[2].escaped, false);
+  assert.strictEqual(loaded.games[0].entries[3].escaped, true);
+  assert.strictEqual(loaded.games[0].entries[4].escaped, false);
+  assert.strictEqual(loaded.tiebreak.playerA, 'jordan');
+  assert.strictEqual(loaded.tiebreak.rounds[0].timeSeconds, 38.2);
+  assert.strictEqual(loaded.tiebreak.winnerId, null);
+
+  var scored = S.scoreGame(loaded.games[0]);
+  function total(id) {
+    return scored.rows.filter(function (row) { return row.playerId === id; })[0].total;
+  }
+  assert.strictEqual(total('rowan'), 26);
+  assert.strictEqual(total('alex'), 27);
+  assert.strictEqual(total('sam'), 9);
+  assert.strictEqual(total('jordan'), 32);
+  assert.strictEqual(total('casey'), 4);
+  assert.ok(scored.rows.filter(function (row) { return row.playerId === 'jordan'; })[0].lines.some(function (line) {
+    return line === '1 other survivor escaped +4.';
+  }));
+
+  var legacyShare = {
+    v: 1,
+    t: 'Friday night trial',
+    p: legacyExport.players.map(function (player) { return { i: player.id, n: player.name }; }),
+    g: [{
+      i: 'g1',
+      k: 'rowan',
+      e: [
+        { p: 'rowan', b: 24000, h: 2, s: 0 },
+        { p: 'alex', b: 30000, h: 0, s: 1 },
+        { p: 'sam', b: 18000, h: 0, s: 0 },
+        { p: 'jordan', b: 40000, h: 0, s: 1 },
+        { p: 'casey', b: 8000, h: 0, s: 0 }
+      ]
+    }],
+    tb: { a: 'jordan', b: 'casey', r: [{ w: 'jordan', t: 38.2 }] }
+  };
+  var fromShare = S.importState(legacyShare);
+  assert.strictEqual(fromShare.players.length, 5);
+  assert.strictEqual(fromShare.games[0].entries[1].escaped, true);
+  assert.strictEqual(fromShare.games[0].entries[3].bloodpoints, 40000);
+  assert.strictEqual(fromShare.games[0].entries[3].escaped, true);
+  assert.strictEqual(fromShare.games[0].entries[4].escaped, false);
+  assert.strictEqual(S.scoreGame(fromShare.games[0]).rows.filter(function (row) {
+    return row.playerId === 'alex';
+  })[0].escapePoints, 12);
+  assert.deepStrictEqual(S.serialise(fromShare).g, legacyShare.g);
 });
 
 if (!process.exitCode) console.log(passed + ' tests passed');
