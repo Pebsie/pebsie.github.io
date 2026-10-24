@@ -221,7 +221,7 @@
     root.appendChild(h('h2', { id: 'standings-heading' }, ['Standings']));
     var line;
     if (!state.games.length) {
-      line = 'No games yet. 186 is the most one player can score across five standard games.';
+      line = 'No games yet. ' + S.TOURNAMENT_MARK + ' is the most one player can score across five standard games.';
     } else if (board.tiedForFirst) {
       var names = board.tiedIds.map(displayName);
       line = names.join(', ').replace(/, ([^,]*)$/, ' and $1') + ' are tied on ' + board.max + '.';
@@ -244,7 +244,7 @@
       fill.style.width = pct + '%';
       var pace = row.total > S.TOURNAMENT_MARK
         ? (row.total - S.TOURNAMENT_MARK) + ' past the five-game mark'
-        : Math.round(pct) + '% towards 186';
+        : Math.round(pct) + '% towards ' + S.TOURNAMENT_MARK;
       var table = h('table', { class: 'mini' }, [
         h('thead', {}, [h('tr', {}, [h('th', {}, ['Game']), h('th', {}, ['Role']), h('th', {}, ['Pts']), h('th', {}, ['Running'])])])
       ]);
@@ -289,7 +289,7 @@
         h('h3', { class: 'slab-name', 'data-name-for': row.player.id }, [displayName(row.player.id)]),
         h('div', { class: 'slab-score' }, [
           h('div', { class: 'slab-total' }, [String(row.total)]),
-          h('div', { class: 'slab-of' }, ['/ 186'])
+          h('div', { class: 'slab-of' }, ['/ ' + S.TOURNAMENT_MARK])
         ]),
         h('div', { class: 'track' }, [fill]),
         h('p', { class: 'pace' }, [pace]),
@@ -461,8 +461,9 @@
       var value = draft.values[player.id];
       return value && (value.escaped === true || value.escaped === false);
     });
-    var allEscaped = allChosen && survivors.length > 0 && survivors.every(function (player) {
-      return draft.values[player.id].escaped === true;
+    var markedEscapes = survivors.filter(function (player) {
+      var value = draft.values[player.id];
+      return value && value.escaped === true;
     });
     state.players.forEach(function (player) {
       var preview = document.querySelector('.js-preview[data-player="' + player.id + '"]');
@@ -486,19 +487,24 @@
         lines.textContent = bpOk ? '' : (S.validateBloodpoints(value.bloodpoints) || '');
         return;
       }
+      var escaped = value.escaped === true;
+      var othersEscaped = 0;
+      if (!isKiller && escaped) {
+        othersEscaped = markedEscapes.filter(function (other) { return other.id !== player.id; }).length;
+      }
       var scored = S.scoreEntry({
         role: isKiller ? 'killer' : 'survivor',
         bloodpoints: value.bloodpoints,
         kills: value.kills,
-        escaped: value.escaped === true,
-        allSurvivorsEscaped: allEscaped
+        escaped: escaped,
+        othersEscaped: othersEscaped
       });
       preview.textContent = String(scored.total);
       var cap = isKiller ? S.KILLER_GAME_MAX : S.SURVIVOR_GAME_MAX;
-      preview.classList.toggle('is-max', scored.total === cap);
+      preview.classList.toggle('is-max', scored.total === cap && (isKiller || allChosen));
       var text = scored.lines.join(' ');
-      if (!isKiller && value.escaped === true && !allChosen) {
-        text += ' The escape bonus lands once every survivor is marked.';
+      if (!isKiller && escaped && !allChosen) {
+        text += ' Each other survivor who escapes adds ' + S.ESCAPE_OTHER + '. Some seats are still unmarked.';
       }
       lines.textContent = text;
     });
@@ -985,7 +991,7 @@
         h('img', { class: 'brand-logo', src: 'assets/logo.webp', alt: 'Dead by Daylight' }),
         h('p', { class: 'reveal-kicker' }, ['The Entity keeps the tally']),
         h('h2', {}, [state.title]),
-        h('p', {}, [state.players.length + ' players · ' + state.games.length + ' games · mark of 186']),
+        h('p', {}, [state.players.length + ' players · ' + state.games.length + ' games · mark of ' + S.TOURNAMENT_MARK]),
         names
       ]));
       announce(state.title + '. ' + state.games.length + ' games.');
