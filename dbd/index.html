@@ -87,18 +87,17 @@
       <blockquote class="quote">
         <p>Every 2000 blood points = 1 point, rounded to the nearest 2k. For killers this is capped at 10 points to discourage farming.</p>
         <p>Every kill is +8 points. This means a killer can earn up to 32 points per game on top of their BP, a total of 42.</p>
-        <p>Escaping is +6 points. This means a survivor can earn up to 26 points per game.</p>
-        <p>Killer 4k is +8 points, capping a game at 50 points.</p>
-        <p>Every survivor escaping gives every survivor +8 points, capping a game at 34 points.</p>
-        <p>No perks, items or killers are off limits. Total achievable points = 186. In the event of a tie, we'll do a best of 3, 1v1 timed chase.</p>
+        <p>Escaping is +8 points, plus +4 for every other survivor who escaped in the same game. One escapee scores 8, two score 12 each, three score 16 each, and four score 20 each. Survivors who die score no escape points. With the bloodpoint cap, a survivor game tops out at 40.</p>
+        <p>Killer 4k is +8 points, capping a killer game at 50 points.</p>
+        <p>No perks, items or killers are off limits. Total achievable points = 210. In the event of a tie, we'll do a best of 3, 1v1 timed chase.</p>
       </blockquote>
       <p>The ledger applies that as follows.</p>
       <ul class="rules-list">
         <li>Bloodpoint points are the bloodpoints divided by 2,000 and rounded to the nearest whole number. 1,000 rounds up to 1. 3,000, which sits halfway between 2,000 and 4,000, rounds up to 2.</li>
         <li>A killer’s bloodpoint points stop at 10. A survivor’s stop at 20, which is also what 40,000 bloodpoints rounds to. Bloodpoints must be a whole number from 0 to 40,000.</li>
         <li>Each kill is 8 points, and kills run from 0 to 4. Four kills add a further 8. That is 10 + 32 + 8 = 50, the most a killer can score in one game.</li>
-        <li>Each survivor who escapes scores 6. When every survivor in that game escapes, each of them scores a further 8. With the bloodpoint cap, that is 20 + 6 + 8 = 34.</li>
-        <li>186 is the most one player can reach across five games: a 50-point 4K in their killer game, and 34 in each of the other four if those games are full escapes. The bar on each player runs towards that mark. Other formats are allowed; the mark is a reference, not a lock.</li>
+        <li>A survivor who escapes scores 8, plus 4 for every other survivor who escaped in that game. One escape is 8, two are 12 each, three are 16 each, and four are 20 each. Dying scores nothing for the escape. With the bloodpoint cap, that is 20 + 20 = 40 in a five-player trial.</li>
+        <li>210 is the most one player can reach across five games with five players: a 50-point 4K in their killer game, and 40 in each of the other four when all four survivors escape. The bar on each player runs towards that mark. Other formats are allowed; the mark is a reference, not a lock.</li>
         <li>Kills plus escapes cannot be more than the number of survivors. Fewer is allowed, for bleed-outs and disconnects. If two or more players are level at the top after at least one game, record a best-of-three 1v1 timed chase. First to two chases takes the tie-break. The points stay level.</li>
       </ul>
       <table class="examples">
@@ -108,8 +107,9 @@
         <tbody>
           <tr><td>Killer, 32,000 bloodpoints, 4 kills</td><td>10 capped + 32 + 8 = 50</td></tr>
           <tr><td>Killer, 20,000 bloodpoints, 0 kills</td><td>10, and the cap has not bitten</td></tr>
-          <tr><td>Survivor, 40,000 bloodpoints, escaped, team did not all escape</td><td>20 + 6 = 26</td></tr>
-          <tr><td>Survivor, 40,000 bloodpoints, every survivor escaped</td><td>20 + 6 + 8 = 34</td></tr>
+          <tr><td>Survivor, 40,000 bloodpoints, the only escape</td><td>20 + 8 = 28</td></tr>
+          <tr><td>Survivor, 40,000 bloodpoints, two escaped</td><td>20 + 8 + 4 = 32</td></tr>
+          <tr><td>Survivor, 40,000 bloodpoints, all four escaped</td><td>20 + 8 + 12 = 40</td></tr>
         </tbody>
       </table>
     </section>

@@ -2,10 +2,12 @@
    Bloodpoints: 1 point per 2,000, rounded to the nearest 2,000 (half up).
    Killer bloodpoint points are capped at 10. Survivor bloodpoint points are
    capped at 20 (a trial cannot pay more than 40,000 bloodpoints).
-   Each kill is +8. Four kills add a further +8. Escaping is +6. When every
-   survivor in the game escapes, each of those survivors gains a further +8.
-   A killer game therefore tops out at 50, a survivor game at 34, and one
-   player tops out at 186 across five games (one 4K and four full escapes). */
+   Each kill is +8. Four kills add a further +8. A survivor who escapes
+   scores +8, plus +4 for every other survivor who escaped in that game
+   (one escapee 8, two 12 each, three 16 each, four 20 each). Dying scores
+   nothing for the escape. A killer game tops out at 50. In a five-player
+   trial a survivor game tops out at 40, and one player tops out at 210
+   across five games (one 4K and four full escapes). */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -18,12 +20,12 @@
   var SURVIVOR_BP_CAP = 20;
   var KILL_POINT = 8;
   var MAX_KILLS = 4;
-  var ESCAPE_POINT = 6;
+  var ESCAPE_POINT = 8;
+  var ESCAPE_OTHER = 4;
   var FOUR_K_BONUS = 8;
-  var ALL_ESCAPE_BONUS = 8;
   var KILLER_GAME_MAX = 50;
-  var SURVIVOR_GAME_MAX = 34;
-  var TOURNAMENT_MARK = 186;
+  var SURVIVOR_GAME_MAX = 40;
+  var TOURNAMENT_MARK = 210;
   var MAX_PLAYERS = 12;
   var MIN_PLAYERS = 2;
   var MAX_GAMES = 40;
@@ -82,13 +84,13 @@
         lines.push('4K bonus +' + FOUR_K_BONUS + '.');
       }
     } else if (entry.escaped) {
-      escapePoints = ESCAPE_POINT;
+      var others = parseWhole(entry.othersEscaped);
+      if (others === null || others < 0) others = 0;
+      var extra = others * ESCAPE_OTHER;
+      escapePoints = ESCAPE_POINT + extra;
       lines.push('Escaped +' + ESCAPE_POINT + '.');
-      if (entry.allSurvivorsEscaped) {
-        bonus = ALL_ESCAPE_BONUS;
-        bonusLabel = 'All escaped';
-        lines.push('Every survivor escaped +' + ALL_ESCAPE_BONUS + '.');
-      }
+      if (others === 1) lines.push('1 other survivor escaped +' + ESCAPE_OTHER + '.');
+      else if (others > 1) lines.push(others + ' other survivors escaped × ' + ESCAPE_OTHER + ' = ' + extra + '.');
     } else {
       lines.push('Did not escape.');
     }
@@ -113,15 +115,17 @@
   function scoreGame(game) {
     var entries = game.entries || [];
     var survivors = entries.filter(function (e) { return e.playerId !== game.killerId; });
-    var allEscaped = survivors.length > 0 && survivors.every(function (e) { return !!e.escaped; });
+    var escapeCount = survivors.filter(function (e) { return !!e.escaped; }).length;
+    var allEscaped = survivors.length > 0 && escapeCount === survivors.length;
     var rows = entries.map(function (e) {
       var role = e.playerId === game.killerId ? 'killer' : 'survivor';
+      var escaped = role === 'survivor' && !!e.escaped;
       var scored = scoreEntry({
         role: role,
         bloodpoints: e.bloodpoints,
         kills: role === 'killer' ? e.kills : 0,
-        escaped: role === 'survivor' ? !!e.escaped : false,
-        allSurvivorsEscaped: allEscaped
+        escaped: escaped,
+        othersEscaped: escaped ? escapeCount - 1 : 0
       });
       scored.playerId = e.playerId;
       return scored;
@@ -131,7 +135,7 @@
     return {
       rows: rows,
       allSurvivorsEscaped: allEscaped,
-      escapeCount: survivors.filter(function (e) { return !!e.escaped; }).length,
+      escapeCount: escapeCount,
       survivorCount: survivors.length,
       killCount: killer ? Number(killer.kills) || 0 : 0
     };
@@ -426,6 +430,8 @@
       tiebreak = { playerA: a, playerB: b, rounds: rounds, winnerId: decided.winnerId };
     }
 
+    // Stored games keep bloodpoints, kills and escapes. A version 1 file from
+    // the previous escape rule loads unchanged and is scored again on read.
     return { version: 1, title: cleanTitle(raw.title != null ? raw.title : raw.t), players: players, games: games, tiebreak: tiebreak };
   }
 
@@ -455,7 +461,7 @@
           return { winnerId: round.winnerId || null, timeSeconds: round.timeSeconds == null ? null : round.timeSeconds };
         })
       } : null,
-      note: 'Every 2,000 bloodpoints is 1 point, rounded to the nearest 2,000. Killer bloodpoint points are capped at 10. Survivor bloodpoint points are capped at 20. Each kill is +8. Escaping is +6. A 4K is +8. Every survivor escaping is +8 for each survivor. Five-game mark: 186.'
+      note: 'Every 2,000 bloodpoints is 1 point, rounded to the nearest 2,000. Killer bloodpoint points are capped at 10. Survivor bloodpoint points are capped at 20. Each kill is +8. A 4K is +8. Escaping is +8, plus +4 for every other survivor who escaped in that game. Dying scores no escape points. Five-game mark for five players: 210.'
     };
   }
 
@@ -495,8 +501,8 @@
     KILL_POINT: KILL_POINT,
     MAX_KILLS: MAX_KILLS,
     ESCAPE_POINT: ESCAPE_POINT,
+    ESCAPE_OTHER: ESCAPE_OTHER,
     FOUR_K_BONUS: FOUR_K_BONUS,
-    ALL_ESCAPE_BONUS: ALL_ESCAPE_BONUS,
     KILLER_GAME_MAX: KILLER_GAME_MAX,
     SURVIVOR_GAME_MAX: SURVIVOR_GAME_MAX,
     TOURNAMENT_MARK: TOURNAMENT_MARK,
