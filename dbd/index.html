@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0c0908">
+  <title>The Trial · Dead by Daylight tournament</title>
+  <meta name="description" content="A Dead by Daylight tournament ledger. Bloodpoints, kills and escapes, scored to the house rules, with a full-screen presentation.">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/mark.webp">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="fog" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <svg class="tendril tendril-tl" viewBox="0 0 280 460" aria-hidden="true">
+    <path class="thick" d="M-10 20 C 40 40, 20 120, 70 150 S 30 250, 90 310 S 40 400, 80 460" stroke-width="10"/>
+    <path d="M30 0 C 80 70, 10 130, 100 190 S 40 280, 120 360 S 70 420, 150 470" stroke-width="2"/>
+    <path d="M0 80 C 60 90, 40 160, 110 200 S 20 300, 70 380" stroke-width="1.5"/>
+    <path d="M8 140 C 50 150, 30 210, 90 240" stroke-width="1"/>
+  </svg>
+  <svg class="tendril tendril-br" viewBox="0 0 280 460" aria-hidden="true">
+    <path class="thick" d="M-10 20 C 40 40, 20 120, 70 150 S 30 250, 90 310 S 40 400, 80 460" stroke-width="10"/>
+    <path d="M30 0 C 80 70, 10 130, 100 190 S 40 280, 120 360 S 70 420, 150 470" stroke-width="2"/>
+    <path d="M0 80 C 60 90, 40 160, 110 200 S 20 300, 70 380" stroke-width="1.5"/>
+  </svg>
+  <img class="crow-fly" src="assets/crows.webp" alt="">
+  <img class="crow-fly late" src="assets/crows.webp" alt="">
+  <div class="drips" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+
+  <header class="top">
+    <div class="brand">
+      <img class="brand-mark" src="assets/mark.webp" alt="" width="54" height="54">
+      <div>
+        <img class="brand-logo" src="assets/logo.webp" alt="Dead by Daylight" width="280" height="48">
+        <p class="brand-kicker">Tournament ledger</p>
+      </div>
+    </div>
+    <div class="title-block">
+      <label class="kicker" for="title">Tournament</label>
+      <input id="title" class="title-input" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="title-hint">
+      <span id="title-hint" class="sr-only">Saved on this device, and included in the share link.</span>
+    </div>
+    <div class="actions">
+      <button type="button" id="btn-present" class="btn btn-primary">Present</button>
+      <button type="button" id="btn-share" class="btn">Copy share link</button>
+      <button type="button" id="btn-export" class="btn">Export JSON</button>
+      <button type="button" id="btn-import" class="btn">Import JSON</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+  <div class="hud" aria-hidden="true">
+    <img src="assets/bloodpoints.webp" alt="">
+    <img src="assets/hook.webp" alt="">
+    <img src="assets/generator.webp" alt="">
+    <img src="assets/exit.webp" alt="">
+    <img src="assets/hatch.webp" alt="">
+    <img src="assets/entity.webp" alt="">
+    <img src="assets/crows.webp" alt="">
+    <img src="assets/perks.webp" alt="">
+    <img src="assets/bloodweb.webp" alt="">
+  </div>
+
+  <div id="banner" class="banner" hidden></div>
+  <div id="share-panel" class="share-box" hidden>
+    <p id="share-copy">Anyone who opens this link sees the same scoreboard, read-only. They can import it into their own copy.</p>
+    <input id="share-url" type="url" readonly aria-label="Share link">
+    <div class="row-actions" style="margin-top:8px">
+      <button type="button" id="share-select" class="btn btn-small">Select link</button>
+      <button type="button" id="share-close" class="btn btn-small">Close</button>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <main>
+    <section id="standings" class="panel" aria-labelledby="standings-heading"></section>
+    <div class="split">
+      <section id="editor" class="panel" aria-labelledby="editor-heading"></section>
+      <section id="players" class="panel" aria-labelledby="players-heading"></section>
+    </div>
+    <section id="history" class="panel" aria-labelledby="history-heading"></section>
+    <section id="tiebreak" class="panel" aria-labelledby="tiebreak-heading" hidden></section>
+    <section id="rules" class="panel" aria-labelledby="rules-heading">
+      <p class="kicker">IV · The rules</p>
+      <h2 id="rules-heading">How scoring works</h2>
+      <blockquote class="quote">
+        <p>Every 2000 blood points = 1 point, rounded to the nearest 2k. For killers this is capped at 10 points to discourage farming.</p>
+        <p>Every kill is +8 points. This means a killer can earn up to 32 points per game on top of their BP, a total of 42.</p>
+        <p>Escaping is +6 points. This means a survivor can earn up to 26 points per game.</p>
+        <p>Killer 4k is +8 points, capping a game at 50 points.</p>
+        <p>Every survivor escaping gives every survivor +8 points, capping a game at 34 points.</p>
+        <p>No perks, items or killers are off limits. Total achievable points = 186. In the event of a tie, we'll do a best of 3, 1v1 timed chase.</p>
+      </blockquote>
+      <p>The ledger applies that as follows.</p>
+      <ul class="rules-list">
+        <li>Bloodpoint points are the bloodpoints divided by 2,000 and rounded to the nearest whole number. 1,000 rounds up to 1. 3,000, which sits halfway between 2,000 and 4,000, rounds up to 2.</li>
+        <li>A killer’s bloodpoint points stop at 10. A survivor’s stop at 20, which is also what 40,000 bloodpoints rounds to. Bloodpoints must be a whole number from 0 to 40,000.</li>
+        <li>Each kill is 8 points, and kills run from 0 to 4. Four kills add a further 8. That is 10 + 32 + 8 = 50, the most a killer can score in one game.</li>
+        <li>Each survivor who escapes scores 6. When every survivor in that game escapes, each of them scores a further 8. With the bloodpoint cap, that is 20 + 6 + 8 = 34.</li>
+        <li>186 is the most one player can reach across five games: a 50-point 4K in their killer game, and 34 in each of the other four if those games are full escapes. The bar on each player runs towards that mark. Other formats are allowed; the mark is a reference, not a lock.</li>
+        <li>Kills plus escapes cannot be more than the number of survivors. Fewer is allowed, for bleed-outs and disconnects. If two or more players are level at the top after at least one game, record a best-of-three 1v1 timed chase. First to two chases takes the tie-break. The points stay level.</li>
+      </ul>
+      <table class="examples">
+        <thead>
+          <tr><th>Example</th><th>Sum</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Killer, 32,000 bloodpoints, 4 kills</td><td>10 capped + 32 + 8 = 50</td></tr>
+          <tr><td>Killer, 20,000 bloodpoints, 0 kills</td><td>10, and the cap has not bitten</td></tr>
+          <tr><td>Survivor, 40,000 bloodpoints, escaped, team did not all escape</td><td>20 + 6 = 26</td></tr>
+          <tr><td>Survivor, 40,000 bloodpoints, every survivor escaped</td><td>20 + 6 + 8 = 34</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Fan-made tally for Dead by Daylight tournaments. Icons and the wordmark are game art, stored with this page. Not affiliated with Behaviour Interactive.</p>
+  </footer>
+
+  <div id="present" hidden>
+    <div class="present-heart" aria-hidden="true"></div>
+    <div class="present-top">
+      <span id="present-progress">Opening</span>
+      <button type="button" id="present-sound" class="btn btn-small">Heartbeat off</button>
+      <button type="button" id="present-close" class="btn btn-small">Close</button>
+    </div>
+    <div id="present-stage" tabindex="-1"></div>
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" id="marquee"></div>
+    </div>
+    <div class="present-bottom">
+      <button type="button" id="present-prev" class="btn">Back</button>
+      <p id="present-hint" class="present-hint">Space, arrow, or tap to advance</p>
+      <button type="button" id="present-next" class="btn btn-primary">Advance</button>
+    </div>
+    <div id="present-live" class="sr-only" aria-live="polite"></div>
+  </div>
+
+  <noscript><p style="padding:24px">This ledger needs JavaScript. Scoring still lives in scoring.js if you want to read the rules there.</p></noscript>
+  <script src="scoring.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
