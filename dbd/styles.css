@@ -46,13 +46,17 @@
   --bone-dim: #b7a696;
   --ash: #8c8278;
   --focus: #f2e4d2;
-  --header: 0px;
+  --header: 280px;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; overflow-x: hidden; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  scroll-padding-top: calc(var(--header) + 14px);
+}
 
 body {
   margin: 0;
@@ -65,8 +69,9 @@ body {
     radial-gradient(900px 520px at 100% -10%, rgba(120, 18, 22, 0.45), transparent 60%),
     radial-gradient(700px 480px at -10% 110%, rgba(48, 32, 26, 0.65), transparent 55%),
     var(--bg);
+  scroll-padding-top: calc(var(--header) + 14px);
   padding:
-    env(safe-area-inset-top)
+    0
     env(safe-area-inset-right)
     env(safe-area-inset-bottom)
     env(safe-area-inset-left);
@@ -177,8 +182,8 @@ main,
 .top {
   display: grid;
   gap: 16px;
-  padding: 16px 18px 14px 24px;
-  background: rgba(12, 9, 8, 0.94);
+  padding: calc(16px + env(safe-area-inset-top)) 18px 14px 24px;
+  background: #0c0908;
   border-bottom: 1px solid #6a2226;
   position: sticky;
   top: 0;
