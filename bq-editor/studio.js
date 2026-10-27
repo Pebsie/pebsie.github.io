@@ -165,7 +165,7 @@ async function qsCommit(table, row, label) {
   qsBar();
   return id;
 }
-const qsList = table => ({ quest_def: S.c.quests, npc: S.c.npcs, conversation: S.c.conversations, quest_daily_pool: S.c.dailyPools || [] }[table]);
+const qsList = table => ({ quest_def: S.c.quests, npc: S.c.npcs, conversation: S.c.conversations, quest_daily_pool: S.c.dailyPools || [], npc_spawn: S.c.npcSpawns || [] }[table]);
 // Several saves and deletes as one change and one undo step:
 // [{ table, row } | { table, id, delete: true }].
 async function qsCommitMany(list, label) {
@@ -610,7 +610,7 @@ function qsQuestSheet(id) {
   const d = $("#qs-drawer"); if (!d) return;
   const q = qById(id); if (!q) { d.classList.remove("open"); return; }
   const keep = d.dataset.id === String(id) ? d.scrollTop : 0;
-  d.dataset.id = id; d.classList.add("open");
+  d.dataset.id = id; d.classList.add("open"); d.classList.toggle("wide", !!QS.wide);
   const an = qsAnalyse(), iss = an.issues.get(id) || [];
   const P = (patch, label) => qsPatchQuest(id, patch, label);
   const steps = qSteps(q);
@@ -691,7 +691,8 @@ function qsQuestSheet(id) {
   if (!$("#qs-zones")) document.body.append(h("datalist", { id: "qs-zones" }));
   $("#qs-zones").replaceChildren(...zones.map(z => h("option", { value: z })));
   d.replaceChildren(
-    h("div", { class: "qs-wtitle" }, h("span", {}, `QUEST ${q.id}`), h("span", { class: "qs-sp" }), h("a", { href: "#quest/" + q.id, class: "qs-link", title: "The full form in the Quests tab" }, "form"), h("button", { class: "qs-x", title: "Close", onclick: () => { QS.sel = null; d.classList.remove("open"); syncHash("#studio/journey"); document.querySelectorAll(".qs-card.sel").forEach(c => c.classList.remove("sel")); } }, "x")),
+    h("div", { class: "qs-wtitle" }, h("span", {}, `QUEST ${q.id}`), h("span", { class: "qs-sp" }),
+      h("button", { class: "qs-mini qs-widen", title: "More room for the conversation", onclick: () => { QS.wide = !QS.wide; d.classList.toggle("wide", QS.wide); } }, QS.wide ? "narrow" : "wide"), h("a", { href: "#quest/" + q.id, class: "qs-link", title: "The full form in the Quests tab" }, "form"), h("button", { class: "qs-x", title: "Close", onclick: () => { QS.sel = null; d.classList.remove("open"); syncHash("#studio/journey"); document.querySelectorAll(".qs-card.sel").forEach(c => c.classList.remove("sel")); } }, "x")),
     h("div", { class: "qs-sheet" },
       h("div", { class: "qs-title" }, h("span", { class: "qc-lv big", title: "Quest level" }, qsInline(String(q.Level), v => P({ Level: Math.max(1, +v || 1) }, `Level ${v}`), { num: true })),
         qsInline(q.Title, v => P({ Title: v || q.Title }, `Renamed to ${v}`), { cls: "qs-h", ph: "Quest title", chips })),
@@ -700,6 +701,8 @@ function qsQuestSheet(id) {
         " - min level ", qsInline(String(q.MinLevel), v => P({ MinLevel: Math.max(1, +v || 1) }, `Min level ${v}`), { num: true })),
       iss.length ? h("div", { class: "qs-iss" }, iss.map(x => h("div", { class: "qs-prob " + x.sev }, h("i", { class: "lg " + x.sev }), x.msg))) : null,
       h("div", { class: "qs-whos" }, who(q.Giver, "gives it", "Giver"), h("span", { class: "qs-bigarrow" }, ">>"), who(q.TurnIn, "takes the hand-in", "TurnIn")),
+      h("h4", {}, "The conversation ", h("span", { class: "hint" }, "it comes out of what they say"), " ", h("button", { class: "qs-mini", id: "qs-play-quest", onclick: () => qsPreviewQuest(q) }, "play it")),
+      qsQuestInConvo(q),
       h("h4", {}, "Story"),
       h("div", { class: "qs-chips" }, h("small", {}, "Needs first: "), pre.length ? pre.map(p => chipQ(p, true)) : h("span", { class: "hint" }, "nothing (a starting quest) "), addPre),
       h("div", { class: "qs-chips" }, h("small", {}, "Unlocks: "), next.length ? next.map(p => chipQ(p, false)) : h("span", { class: "hint" }, "nothing yet "), h("button", { class: "qs-mini", onclick: () => qsNewQuest(id) }, "+ quest after this")),
@@ -709,9 +712,7 @@ function qsQuestSheet(id) {
       h("div", { class: "qs-steps " + (seq ? "seq" : "par") }, steps.map(stepRow)), addStep,
       qsDailyBox(q, P),
       daily ? qsRollPreview(q) : null,
-      h("h4", {}, "Rewards"), rwBox,
-      h("h4", {}, "What they say ", h("button", { class: "qs-mini", id: "qs-play-quest", onclick: () => qsPreviewQuest(q) }, "play it")),
-      qsFlow(q)));
+      h("h4", {}, "Rewards"), rwBox));
   d.scrollTop = keep;
 }
 function qsBlankStep(t, q) {
@@ -754,11 +755,33 @@ function qsTalkStep(P, q, npcId) {
   }
   return -1;
 }
+// Quests an NPC's own conversation leads to ("@quest:<id>" on any line
+// reachable from their greeting; npc.go convoQuestLinks). They come up in the
+// chat: no opening on their offer, no [Quest] row, skipped by Anything else?.
+const QS_QLINK = /^@quest:(\d+)$/i;
+function qsConvoLinks(npcId) {
+  const n = S.npcBy[npcId], out = new Set(), seen = new Set();
+  const walk = id => {
+    const c = S.convBy[id]; if (!c || seen.has(id) || seen.size > 500) return; seen.add(id);
+    for (const [, to] of parseOptions(c.Options)) { const m = QS_QLINK.exec(String(to).trim()); if (m) out.add(+m[1]); else if (to && to !== "1" && !String(to).startsWith("@")) walk(to); }
+  };
+  if (n && n.Conversation) walk(n.Conversation);
+  return out;
+}
+// questLinkKey: what an @quest answer is for this player here ("" hides it).
+function qsLinkKey(P, npcId, qid) {
+  const q = qById(qid); if (!q) return "";
+  const st = P.state[qid];
+  if (!st && !P.done.has(qid)) return q.Giver === npcId && qsAvail(P, q) ? "offer:" + qid : "";
+  if (st === "ready") return q.TurnIn === npcId ? "turnin:" + qid : "";
+  if (st === "active") return q.TurnIn === npcId || q.Giver === npcId ? "progress:" + qid : "";
+  return "";
+}
 function qsMenu(P, npcId) {
-  const t = [], k = [], o = [], w = [];
+  const t = [], k = [], o = [], w = [], linked = qsConvoLinks(npcId);
   for (const q of qsOrder()) {
     const st = P.state[q.id], d = qsPDef(P, q);
-    if (!st && !P.done.has(q.id)) { if (q.Giver === npcId && qsAvail(P, q)) o.push({ t: (qsIsDaily(q) ? "[Daily] " : "[Quest] ") + d.Title, k: "offer:" + q.id }); }
+    if (!st && !P.done.has(q.id)) { if (q.Giver === npcId && !linked.has(q.id) && qsAvail(P, q)) o.push({ t: (qsIsDaily(q) ? "[Daily] " : "[Quest] ") + d.Title, k: "offer:" + q.id }); }
     else if (st === "ready" && q.TurnIn === npcId) t.push({ t: "[Complete] " + d.Title, k: "turnin:" + q.id });
     else if (st === "active" && qsTalkStep(P, q, npcId) >= 0) k.push({ t: `[${d.Title}] ${qSteps(d)[qsTalkStep(P, q, npcId)].Text}`, k: "talk:" + q.id });
     else if (st === "active" && (q.TurnIn === npcId || q.Giver === npcId)) w.push({ t: "[In progress] " + d.Title, k: "progress:" + q.id });
@@ -766,7 +789,7 @@ function qsMenu(P, npcId) {
   return [...t, ...k, ...o, ...w];
 }
 // Story quests before dailies (nextOfferLocked).
-const qsNextOffer = (P, npcId) => qsOrder().find(q => !qsIsDaily(q) && q.Giver === npcId && qsAvail(P, q)) || qsOrder().find(q => qsIsDaily(q) && q.Giver === npcId && qsAvail(P, q));
+const qsNextOffer = (P, npcId) => { const l = qsConvoLinks(npcId); return qsOrder().find(q => !qsIsDaily(q) && q.Giver === npcId && !l.has(q.id) && qsAvail(P, q)) || qsOrder().find(q => qsIsDaily(q) && q.Giver === npcId && !l.has(q.id) && qsAvail(P, q)); };
 // What talking to npcId opens on (questFirstLocked): a hand-in here, a talk
 // objective aimed here, then the first quest on offer; "" = the greeting.
 function qsQuestFirst(P, npcId) {
@@ -871,6 +894,8 @@ function qsChat(P, n, ident, v) {
   let nextQ;
   for (const [label, to] of parseOptions(c.Options)) {
     let k = to === "1" || to === "" ? "close" : "chat:" + to;
+    const ql = QS_QLINK.exec(String(to).trim());
+    if (ql) { k = qsLinkKey(P, n.id, +ql[1]); if (!k) continue; }
     if (label.trim().toLowerCase() === "anything else?") { if (nextQ === undefined) nextQ = qsNextOffer(P, n.id) || null; if (nextQ) k = "offer:" + nextQ.id; }
     v.options.push({ t: label, k });
   }
@@ -1012,11 +1037,12 @@ function qsWorldCanvas(o) {
         else if (M.colours[p]) { g.fillStyle = M.colours[p]; g.fillRect(px(x), py(y), sc, sc); }
       }
     }
-    for (const n of S.c.npcs) {
-      if (Math.abs(n.SpawnX - st.cx) > hw || Math.abs(n.SpawnY - st.cy) > hh) continue;
+    for (const { n, sp } of placements()) { // every place each NPC stands
+      if (Math.abs(sp.X - st.cx) > hw || Math.abs(sp.Y - st.cy) > hh) continue;
       const im = imgFor(n.ImgPath);
-      if (im) g.drawImage(im, px(n.SpawnX), py(n.SpawnY), sc, sc);
-      if (o.mark === n.id) { g.strokeStyle = "#f2cc59"; g.lineWidth = 2; g.strokeRect(px(n.SpawnX) - 1, py(n.SpawnY) - 1, sc + 2, sc + 2); }
+      if (im) g.drawImage(im, px(sp.X), py(sp.Y), sc, sc);
+      if (o.mark === n.id) { g.strokeStyle = "#f2cc59"; g.lineWidth = 2; g.strokeRect(px(sp.X) - 1, py(sp.Y) - 1, sc + 2, sc + 2); }
+      if (o.markAt && o.markAt.X === sp.X && o.markAt.Y === sp.Y) { g.strokeStyle = "#fff"; g.lineWidth = 2; g.strokeRect(px(sp.X) - 3, py(sp.Y) - 3, sc + 6, sc + 6); }
     }
     if (o.pin) { g.strokeStyle = "#fff"; g.lineWidth = 2; g.strokeRect(px(o.pin.x) - 1, py(o.pin.y) - 1, sc + 2, sc + 2); if (o.pinImg) { const im = imgFor(o.pinImg); if (im) g.drawImage(im, px(o.pin.x), py(o.pin.y), sc, sc); } }
   };
@@ -1052,8 +1078,22 @@ function qsNpcSheet(body, id) {
   syncHash("#studio/npc/" + id);
   const an = qsAnalyse(), r = qsRoles(n), links = qsLinks(n), iss = an.npcIssues.get(n.id) || [];
   const P = (patch, label) => qsCommit("npc", { ...S.npcBy[id], ...patch }, label).then(qsRerender);
-  const zone = zoneAt(n.SpawnX, n.SpawnY);
-  const map = qsWorldCanvas({ cx: n.SpawnX, cy: n.SpawnY, w: 360, h: 220, sc: 16, mark: n.id, onPick: (x, y) => { if (confirm(`Move ${n.Name} to ${x},${y}?`)) P({ SpawnX: x, SpawnY: y }, `Moved ${n.Name} to ${x},${y}`); } });
+  // Where they stand: every placement (npc_spawn). Tap one to pick it; a tap
+  // on the map moves the picked one there, or adds a place in "+ place" mode.
+  const spots = spawnsOf(n);
+  QS.spot = QS.spot && QS.spot.npc === id && spots.some(sp => sp.X === QS.spot.X && sp.Y === QS.spot.Y) ? QS.spot : spots[0] ? { npc: id, X: spots[0].X, Y: spots[0].Y, add: false } : { npc: id, X: n.SpawnX > -999 ? n.SpawnX : 0, Y: n.SpawnY > -999 ? n.SpawnY : 0, add: true };
+  const zone = spots.length ? zoneAt(spots[0].X, spots[0].Y) : "";
+  const map = qsWorldCanvas({ cx: QS.spot.X, cy: QS.spot.Y, w: 360, h: 220, sc: 16, mark: n.id, markAt: QS.spot.add ? null : QS.spot, onPick: async (x, y) => {
+    if (spots.some(sp => sp.X === x && sp.Y === y)) { QS.spot = { npc: id, X: x, Y: y, add: false }; qsRerender(); return; }
+    if (QS.spot.add) { await addPlacement(n, x, y); QS.spot = { npc: id, X: x, Y: y, add: false }; qsToast(`${n.Name} now also stands at ${x},${y}`); qsRerender(); return; }
+    const sp = spots.find(v => v.X === QS.spot.X && v.Y === QS.spot.Y);
+    if (sp && confirm(`Move ${n.Name} from ${sp.X},${sp.Y} to ${x},${y}?`)) { await movePlacement(n, sp, x, y); QS.spot = { npc: id, X: x, Y: y, add: false }; qsToast(`Moved ${n.Name} to ${x},${y}`); qsRerender(); }
+  } });
+  const spotList = h("div", { class: "qs-spots" },
+    spots.map(sp => h("span", { class: "qs-spot" + (!QS.spot.add && sp.X === QS.spot.X && sp.Y === QS.spot.Y ? " on" : "") },
+      h("button", { type: "button", onclick: () => { QS.spot = { npc: id, X: sp.X, Y: sp.Y, add: false }; qsRerender(); } }, `${sp.X},${sp.Y}`, h("small", {}, zoneAt(sp.X, sp.Y) ? " " + zoneAt(sp.X, sp.Y) : "")),
+      h("button", { type: "button", class: "qs-x", title: "Remove this place", onclick: async () => { if (await removePlacement(n, sp)) qsRerender(); } }, "×"))),
+    h("button", { type: "button", class: "qs-spot add" + (QS.spot.add ? " on" : ""), onclick: () => { QS.spot = { ...QS.spot, add: !QS.spot.add }; qsRerender(); } }, QS.spot.add ? "tap the map to add..." : "+ place"));
   const factions = [...new Set(S.c.npcs.map(x => x.Faction).filter(Boolean))].sort();
   if (!$("#qs-factions")) document.body.append(h("datalist", { id: "qs-factions" }));
   $("#qs-factions").replaceChildren(...factions.map(z => h("option", { value: z })));
@@ -1061,8 +1101,6 @@ function qsNpcSheet(body, id) {
   const preview = qsGamePanel(n, { P: qsScratch() });
   const notes = qsInline(qsNotesGet(id), v => qsNotesSet(id, v).then(qsRerender), { multi: true, cls: "rh qs-notes", ph: "Who are they? How do they talk? What do they want? (Your notes: not shown in game.)", tag: "div" });
   body.append(h("div", { class: "qs-sheetpage" },
-    h("div", { class: "qs-win greet-win", id: "qs-greeting" }, h("div", { class: "qs-wtitle" }, h("span", {}, "GREETING (SHOWN WHEN THEY HAVE NOTHING FOR YOU)"), h("span", { class: "qs-sp" }), h("small", {}, "shared by all their quests")),
-      h("div", { class: "qs-wbody" }, qsGreetingBox(n, {}), h("p", { class: "hint" }, `If ${n.Name} has a quest on offer, a hand-in or a talk objective, the window opens on that instead. Their quests' own lines are further down.`))),
     h("div", { class: "qs-col" },
       h("div", { class: "qs-win" }, h("div", { class: "qs-wtitle" }, h("span", {}, "CHARACTER"), h("span", { class: "qs-sp" }), h("a", { class: "qs-link", href: "#studio/cast" }, "cast"), h("a", { class: "qs-link", href: "#npc/" + id }, "form")),
         h("div", { class: "qs-wbody" },
@@ -1070,12 +1108,12 @@ function qsNpcSheet(body, id) {
             h("div", { class: "qs-heroinfo" }, qsInline(n.Name, v => P({ Name: v || n.Name }, `Renamed to ${v}`), { cls: "qs-h big" }),
               h("div", {}, h("small", {}, "Faction "), qsInline(n.Faction, v => P({ Faction: v }, `Faction ${v}`), { list: "qs-factions", ph: "none" })),
               n.Faction === "Land Agent" ? h("div", { class: "qs-plot" }, "Land Agent: lists rent plots ([Plot] rows) after their quests") : null,
-              h("div", {}, h("small", {}, "Lives at "), `${n.SpawnX},${n.SpawnY}`, zone ? ` - ${zone}` : ""),
+              h("div", {}, h("small", {}, spots.length > 1 ? `Stands in ${spots.length} places ` : "Lives at "), spots.length ? `${spots[0].X},${spots[0].Y}` : "nowhere yet", zone ? ` - ${zone}` : "", spots.length > 1 ? " and more" : ""),
               h("div", { class: "qs-nstats" }, h("span", {}, pix("assets/ui/studio/alert.png", "mi"), `gives ${r.gives.length}`), h("span", {}, pix("assets/ui/studio/complete.png", "mi"), `takes ${r.takes.length}`), h("span", {}, pix("assets/ui/studio/alert-item.png", "mi"), `talk ${r.talks.length}`)))),
           iss.length ? h("div", { class: "qs-iss" }, iss.map(x => h("div", { class: "qs-prob " + x.sev }, h("i", { class: "lg " + x.sev }), x.msg))) : null,
           h("h4", {}, "Personality notes"), notes,
-          h("h4", {}, "Where they stand ", h("span", { class: "hint" }, "click the map to move them, drag to look around")), map,
-          h("div", {}, h("a", { class: "qs-link", href: `#map/${n.SpawnX},${n.SpawnY}` }, "open on the big map")))),
+          h("h4", {}, "Where they stand ", h("span", { class: "hint" }, QS.spot.add ? "tap the map to put them there too" : "tap the map to move the picked place, drag to look around")), spotList, map,
+          h("div", {}, h("a", { class: "qs-link", href: `#map/npc/${n.id}` + (QS.spot.add ? "" : `/${QS.spot.X},${QS.spot.Y}`) }, "place them on the big map")))),
       h("div", { class: "qs-win" }, h("div", { class: "qs-wtitle" }, h("span", {}, "THEIR QUESTS")),
         h("div", { class: "qs-wbody" }, r.all.length ? h("div", { class: "qs-qlist" }, r.all.map(q => h("a", { class: "qs-qrow" + (qsIsDaily(q) ? " daily" : ""), href: "#studio/journey/" + q.id, title: qsIsDaily(q) ? "Daily. Today: " + qsDayDef(q).Title : null }, h("span", { class: "qc-lv" }, q.Level), qsIsDaily(q) ? qsDailyBadge() : null, h("b", {}, qsIsDaily(q) ? qsPh(q.Title) : q.Title), h("small", {}, roleTag(q))))) : h("p", { class: "hint" }, "None yet."),
           r.gives.some(qsIsDaily) ? h("p", { class: "hint" }, qsDailyBadge(), ` Offers one of ${n.Name}'s dailies a day: hidden after the hand-in until the 21:00 reset.`) : null,
@@ -1083,8 +1121,8 @@ function qsNpcSheet(body, id) {
       h("div", { class: "qs-win" }, h("div", { class: "qs-wtitle" }, h("span", {}, "CONNECTED TO")),
         h("div", { class: "qs-wbody" }, links.length ? h("div", { class: "qs-links" }, links.map(l => h("a", { class: "qs-lnk", href: "#studio/npc/" + l.n.id, title: l.qs.map(q => q.Title).join("\n") }, pix(l.n.ImgPath, "pt"), h("b", {}, l.n.Name), h("small", {}, l.qs.length === 1 ? l.qs[0].Title : `${l.qs.length} quests`)))) : h("p", { class: "hint" }, "Nobody, yet. Give them a quest that sends the player to someone.")))),
     h("div", { class: "qs-col wide" },
-      h("div", { class: "qs-win" }, h("div", { class: "qs-wtitle" }, h("span", {}, "DIALOGUE"), h("span", { class: "qs-sp" }), h("small", {}, "click any line to edit it")),
-        h("div", { class: "qs-wbody" }, qsDialogue(n, preview))),
+      h("div", { class: "qs-win", id: "qs-greeting" }, h("div", { class: "qs-wtitle" }, h("span", {}, "CONVERSATION"), h("span", { class: "qs-sp" }), h("small", {}, "greeting, chat and the quests it brings up: click any line to edit it")),
+        h("div", { class: "qs-wbody" }, qsConvo(n, { open: QS.convoOpen }))),
       h("div", { class: "qs-win sticky" }, h("div", { class: "qs-wtitle" }, h("span", {}, "IN GAME"), h("span", { class: "qs-sp" }), h("button", { class: "qs-mini", onclick: () => preview.restart() }, "restart")),
         h("div", { class: "qs-wbody" }, preview, h("p", { class: "hint" }, `As the Playtest character (level ${QS.play.level}, ${QS.play.done.size} quests done). Answers work.`))))));
 }
@@ -1234,7 +1272,7 @@ function qsSuggest(level) {
   const med = a => { a = a.filter(x => x > 0).sort((x, y) => x - y); return a.length ? a[Math.floor(a.length / 2)] : 0; };
   return { XP: med(near.map(q => +q.XP)) || 100 * level, Gold: med(near.map(q => +q.Gold)) || 10 * level };
 }
-function qsNewQuest(afterId, giverId) {
+function qsNewQuest(afterId, giverId, o = {}) {
   const after = afterId ? qById(afterId) : null;
   const level = after ? after.Level + 1 : 1;
   const sug = qsSuggest(level);
@@ -1310,7 +1348,9 @@ function qsNewQuest(afterId, giverId) {
     try {
       const id = await qsCommit("quest_def", row, `New ${daily ? "daily" : "quest"}: ${row.Title}`);
       if (pool.length) await qsCommitMany(pool.map(r => ({ table: "quest_daily_pool", row: { ...r, QuestID: id } })), `${row.Title}: ${pool.length} to pick from`);
-      close(); QS.sel = id; QS.view = "journey"; QS.arg = id; go("#studio/journey/" + id);
+      close();
+      if (o.onMade) { await o.onMade(id); return; } // made from a line of a conversation: stay there
+      QS.sel = id; QS.view = "journey"; QS.arg = id; go("#studio/journey/" + id);
     } catch (e) { qsToast(e.message); }
   }
   draw();

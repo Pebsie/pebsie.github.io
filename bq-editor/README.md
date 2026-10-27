@@ -13,7 +13,7 @@ Live: **https://tomlock.me/bq-editor/** (also https://tomlock.me/brawlquest-edit
 2. Edit in the tabs:
    * **Quest Studio**: plan and play through the player journey.
      * **Journey**: every quest as a card on a pannable, zoomable map (drag, pinch, Ctrl+scroll or trackpad pinch), in story order or by level, grouped into questlines. Each card shows the level, giver and hand-in portraits and the objectives (joined when they are in order). Problems are flagged on the cards and listed under Problems: missing or circular prerequisites (and everything they lock), level drops and jumps, no giver, missing enemies/items/NPCs in objectives, no reward, missing lines. Drag a card's + onto another quest to make it need this one; click an arrow to unlink; click + to add a quest after it. Click a card to edit everything in place (Enter saves, Esc cancels).
-     * **Cast**: NPCs as character cards in the order you meet them; each opens a character sheet with their look, notes (editor-only `npc_notes` table, created on the first note), where they stand on the real map (click to move), their quests, who they're connected to, and their dialogue as a chat you can edit, with the game's conversation window beside it.
+     * **Cast**: NPCs as character cards in the order you meet them; each opens a character sheet with their look, notes (editor-only `npc_notes` table, created on the first note), where they stand on the real map (click to move), their quests, who they're connected to, and their **conversation**: one tree from the greeting through the chat to the quests it brings up, every line editable, with the game's conversation window beside it.
      * **Playtest**: a pretend character: pick a level, take, finish and hand in quests through the same menu rules as the server, and see what's on offer, what's coming up and why.
      * **+ Quest** / **+ NPC**: quick creation (giver, objective, words; level, XP and gold suggested from nearby quests). Undo/Redo (Ctrl+Z / Ctrl+Shift+Z) for every Studio edit; edits go straight into the open db, so History autosaves them.
    * **Map**: tile sprites, NPCs, mob spawns, quest reach points, plots.
@@ -34,6 +34,18 @@ Live: **https://tomlock.me/bq-editor/** (also https://tomlock.me/brawlquest-edit
        `content/migrations/2026-10-24-areas.sql`); a db without them offers to
        create them. Unpainted tiles use the old rule in the game (cave, floor
        and wall grounds are inside).
+     * **NPCs**: put someone in the world where you click or tap: "Someone
+       you have" (search the cast) or "A new NPC" (name, look, faction).
+       One NPC can stand in many places (a Guard at every gate): same
+       name, words and quests at each, and the game offers, takes hand-ins
+       and shows markers at all of them. Drag a placement to move it; the
+       panel lists every place of the picked NPC with Remove. Each place is
+       a row in `npc_spawn` (the API's `content/migrations/2026-10-27-npc-spawns.sql`,
+       `docs/NPC_SPAWNS.md`); the first placement turns the table on in a
+       db without it (every NPC's current position becomes its first
+       place). `npc.SpawnX`/`SpawnY` follow each NPC's first place. On a
+       phone the map sits above the panel: one finger taps and drags,
+       two fingers pan and pinch-zoom.
      * **Place mobs**: pick the enemy from a thumbnail grid, click to place.
      * **Select**: drag NPCs and mobs; "Change sprite..." / "Change..." open a
        sprite picker for the NPC or the mob on that tile.
@@ -61,6 +73,10 @@ Live: **https://tomlock.me/bq-editor/** (also https://tomlock.me/brawlquest-edit
    `bq-content.db` with it and restart the API.
 4. **Export SQL** gives the same edits as a migration (keyed, safe to apply twice)
    for `content/migrations/`.
+
+Saves never reset a column they don't send: a form without `Daily`,
+`Sequential`, the quest dialogue columns or anything newer keeps the row's
+current value.
 
 ## Saving, history and GitHub
 
@@ -146,6 +162,8 @@ sync needs to be online; autosave doesn't.
 ## Quest Studio: conversations and daily quests
 
 **The conversation flow.** The quest and NPC sheets show what the player sees, in the game's conversation-window look: the offer, after accepting, in progress and the hand-in. Every line (the NPC's and every answer) is editable inline; lines shared by several quests (an NPC's greeting) are flagged. The NPC sheet starts with an editable **Greeting** (shown when they have nothing for you). A conversation opens on quest business before the greeting (hand-in, then a talk step, then an offer), exactly as the server does; **Playtest** follows the same flow, and declining goes to the menu.
+
+**Conversation first.** Quests come out of what NPCs say. An NPC's sheet has one **Conversation**: the greeting, the chat lines it leads to, and, hanging off any answer, the quests it brings up, each unfolding into its offer (and its branches), accept / decline, after accepting, in progress and the hand-in, all editable where they sit. Every answer has a destination picker: end the chat, another line, **+ a new line**, one of the NPC's quests, or **+ a new quest...** (the quick quest maker; you stay in the conversation). **+ quest from here** on any line does the same as a new answer ("Got any work for me?", reword it). A quest's own sheet opens with **The conversation**: "In the chat" shows the giver's greeting and the lines on the way with the answer that brings it up marked (all editable), then the quest's lines. In the data, an answer that brings up a quest is an ordinary `conversation.Options` entry with the target `@quest:<id>` (BrawlQuest-API `docs/QUEST_DIALOGUE.md`): the game shows the offer while the quest is available, in-progress talk while it's active and the hand-in when it's ready, and hides the answer otherwise. A quest the chat brings up no longer jumps in ahead of the greeting; quests nobody brings up still open straight away (listed as "Opens straight away" with a "bring it up from the greeting instead" button). Needs the API from f57505f; older servers treat `@quest:` as a missing line.
 
 **Branching offers.** "Turn into a conversation" on a quest, then **+ question** under any NPC line. Every answer has its own wording and a small action tag: another line, back to the offer (`@offer`), accept (`@accept`), decline (`@decline`), the menu (`@menu`), anything else (`@more`) or end (`@close`). "I'll do it." / "Not right now." / "On it." are greyed defaults you can overwrite (stored in the quest's `Replies`); several accept or decline answers with different wording are fine. A click-through preview plays the tree as a player (with the Playtest character), and warnings flag an accept that can't be reached, dead ends, loops with no way out and more than 6 answers on a line. **Enable quest conversations in this db** adds the dialogue columns (`OfferTree`, `AcceptTree`, `ProgressTree`, `CompleteTree`, `Replies`) with the same statements as the API's `2026-10-26-quest-dialogue.sql`; old quests stay single-box. Schema: BrawlQuest-API `docs/QUEST_DIALOGUE.md`.
 
