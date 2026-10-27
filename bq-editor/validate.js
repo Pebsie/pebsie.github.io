@@ -97,6 +97,8 @@ const BQCheck = (() => {
       boss_patterns: { optional: true, types: { id: "i", EnemyID: "i", Pattern: "s" } },
       plot: { optional: true, types: { id: "i", Name: "s", X: "i", Y: "i", W: "i", H: "i", Rent: "i", MinLevel: "i" } },
       // dailyquests.go loadDailyPools: a row that doesn't Scan is skipped.
+      // npc.go loadNPCInstances: placements of NPCs (2026-10-27-npc-spawns.sql).
+      npc_spawn: { optional: true, types: { id: "i", NPC: "i", X: "i", Y: "i" } },
       quest_daily_pool: { optional: true, types: { id: "i", QuestID: "i", Kind: "s", Slot: "i", RefID: "i", Name: "s", Label: "s", Min: "i", Max: "i", X: "i", Y: "i", Radius: "n", Weight: "i" } },
     };
     const ok = {};
@@ -205,6 +207,7 @@ const BQCheck = (() => {
       const re = /\[\s*['"](.*?)['"]\s*,\s*['"]([^'"]*)['"]\s*\]/g;
       let m;
       while ((m = re.exec(String(r.Options || "")))) if (m[2] !== "1" && !m[2].startsWith("@") && !nodeIds.has(m[2])) add("error", "conversation", w, `answer "${m[1]}" leads to node "${m[2]}", which doesn't exist`, route);
+        else if (/^@quest:/i.test(m[2]) && questIds && !questIds.has(+m[2].slice(7))) add("warning", "conversation", w, `answer "${m[1]}" brings up quest ${m[2].slice(7)}, which doesn't exist: the game hides it`, route);
       if (String(r.ItemsGiven || "").trim()) {
         const g = goList(r.ItemsGiven, T.invItem, "ItemsGiven");
         g.errs.forEach(e => add("error", "conversation", w, e + " (the API gives nothing)", route));
@@ -219,6 +222,8 @@ const BQCheck = (() => {
           if (String(r[k] || "").trim() && !nodeIds.has(String(r[k]).trim())) add("warning", "quest_def", w, `${k} "${r[k]}" doesn't exist: the game uses the single text box`, route);
         if (String(r.Replies || "").trim()) { try { const o = JSON.parse(r.Replies); if (!o || typeof o !== "object" || Array.isArray(o)) throw 0; } catch { add("error", "quest_def", w, "Replies is not a JSON object", route); } }
       }
+    if (ok.npc && ok.npc_spawn) for (const r of q("SELECT s.id, s.NPC FROM npc_spawn s WHERE s.NPC NOT IN (SELECT id FROM npc) ORDER BY s.id"))
+      add("warning", "npc", `NPC placement ${r.id}`, `stands for NPC ${r.NPC}, which doesn't exist (the game skips it)`, "#map");
     if (ok.npc && nodeIds) for (const r of q("SELECT id, Name, Conversation FROM npc WHERE IFNULL(Conversation, '') <> '' ORDER BY id"))
       if (!nodeIds.has(r.Conversation)) add("warning", "npc", `NPC ${r.id} ${r.Name}`, `greeting node "${r.Conversation}" doesn't exist`, "#npc/" + r.id);
 
