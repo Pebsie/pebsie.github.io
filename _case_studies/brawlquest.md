@@ -96,7 +96,7 @@ The 2022 game moved one tile at a time and ran most of the world on a one-second
 
 ### Content as data
 
-All of the game's content lives in one SQLite database: items, enemies, NPCs, dialogue, quests, loot tables and the world map itself. The Go server reads it, and I edit it with a browser-based [content editor](/work/brawlquest-editor/) I built for the job. Changes to the live game go out as small SQL migrations, each with a rollback.
+All of the game's content lives in one SQLite database: items, enemies, NPCs, dialogue, quests, loot tables and the world map itself. The Go server reads it, and I edit it with a browser-based [content editor]({{ '/work/brawlquest-editor/' | relative_url }}) I built for the job. Changes to the live game go out as small SQL migrations, each with a rollback.
 
 ### Tested headless
 

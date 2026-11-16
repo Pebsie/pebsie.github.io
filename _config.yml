@@ -2,7 +2,9 @@
 title: Thomas Lock
 description: Apps, games and tools by Thomas Lock.
 url: https://tomlock.me
-baseurl: ""
+baseurl: ""   # Stays empty for tomlock.me. The /v2 preview repo (Pebsie/v2) uses its own config with baseurl /v2.
+# preview: true adds a noindex robots tag. Only the preview repo sets it.
+preview: false
 lang: en-GB
 author: Thomas Lock
 email: contact@tomlock.me

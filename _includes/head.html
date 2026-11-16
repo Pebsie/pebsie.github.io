@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+{% if site.preview %}<meta name="robots" content="noindex, nofollow">
+{% endif %}<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f3eee4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#171511" media="(prefers-color-scheme: dark)">
 <link rel="preload" href="{{ '/assets/fonts/fraunces-latin-600-normal.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
