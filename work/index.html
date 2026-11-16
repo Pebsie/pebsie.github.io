@@ -1,0 +1,36 @@
+---
+layout: default
+title: Work
+description: Case studies of apps, games and tools by Thomas Lock.
+body_class: page-work
+---
+{% assign studies = site.case_studies | sort: 'order' %}
+<section class="page-head wrap">
+  <h1 class="page-title">Work</h1>
+  <p class="page-intro">Case studies of things I've built, and the apps I've shipped for clients.</p>
+</section>
+
+<section class="section wrap" aria-labelledby="cs-h">
+  <div class="section__head"><h2 class="section-label" id="cs-h"><span>01</span> Case studies</h2></div>
+  <ol class="work-list">
+    {% for cs in studies %}
+    <li class="work-row">
+      <a href="{{ cs.url | relative_url }}" class="work-row__link">
+        <span class="work-row__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+        <span class="work-row__text">
+          <span class="work-row__title">{{ cs.title }}</span>
+          <span class="work-row__summary">{{ cs.summary }}</span>
+          <span class="work-row__stack">{{ cs.stack | join: ' / ' }}</span>
+        </span>
+        <span class="work-row__year">{{ cs.year }}</span>
+        <span class="work-row__thumb"><img src="{{ cs.cover | relative_url }}" alt="" loading="lazy" decoding="async" width="480" height="270"></span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section class="section wrap" aria-labelledby="apps-h">
+  <div class="section__head"><h2 class="section-label" id="apps-h"><span>02</span> Other apps</h2></div>
+  {% include other-work.html %}
+</section>

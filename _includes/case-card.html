@@ -1,0 +1,14 @@
+{% assign cs = include.cs %}
+<article class="case-card">
+  <a class="case-card__link" href="{{ cs.url | relative_url }}">
+    <div class="case-card__media">
+      <img src="{{ cs.cover | relative_url }}" alt="{{ cs.cover_alt | default: cs.title }}" loading="{{ include.loading | default: 'lazy' }}" decoding="async" width="1200" height="675"{% if cs.cover_position %} style="object-position: {{ cs.cover_position }}"{% endif %}>
+    </div>
+    <div class="case-card__body">
+      <p class="case-card__meta"><span>{{ cs.year }}</span><span>{{ cs.kind }}</span></p>
+      <h3 class="case-card__title">{{ cs.title }}</h3>
+      <p class="case-card__summary">{{ cs.summary }}</p>
+      <p class="case-card__stack">{{ cs.stack | join: ' / ' }}</p>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,14 @@
+<ol class="ledger">
+  {% for p in site.data.projects %}
+  <li class="ledger__row">
+    <img class="ledger__icon" src="{{ p.icon | relative_url }}" alt="" width="56" height="56" loading="lazy" decoding="async">
+    <div class="ledger__main">
+      <h3 class="ledger__name">{% if p.case_study %}<a href="{{ '/work/' | append: p.case_study | append: '/' | relative_url }}">{{ p.name }}</a>{% else %}{{ p.name }}{% endif %}</h3>
+      <p>{{ p.blurb }}</p>
+      {% if p.note %}<p class="muted small">{{ p.note }}</p>{% endif %}
+    </div>
+    <p class="ledger__year">{% if p.year contains 'TODO' %}{% include todo.html text="year" %}{% else %}{{ p.year }}{% endif %}</p>
+    <p class="ledger__links">{% for l in p.links %}<a href="{{ l.url }}">{{ l.label }}</a>{% endfor %}</p>
+  </li>
+  {% endfor %}
+</ol>

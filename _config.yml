@@ -1,0 +1,78 @@
+# Site settings. Edit these, then push. GitHub Pages rebuilds on its own.
+title: Thomas Lock
+description: Apps, games and tools by Thomas Lock.
+url: https://tomlock.me
+baseurl: ""
+lang: en-GB
+author: Thomas Lock
+email: contact@tomlock.me
+twitter:
+  username: pebsiee
+social:
+  name: Thomas Lock
+  links:
+    - https://twitter.com/pebsiee
+    - https://www.linkedin.com/in/pebsie/
+    - https://github.com/Pebsie
+
+# Shown in the footer and the contact section.
+contact_links:
+  - label: Email
+    url: mailto:contact@tomlock.me
+    text: contact@tomlock.me
+  - label: GitHub
+    url: https://github.com/Pebsie
+    text: github.com/Pebsie
+  - label: LinkedIn
+    url: https://www.linkedin.com/in/pebsie/
+    text: linkedin.com/in/pebsie
+  - label: X / Twitter
+    url: https://twitter.com/pebsiee
+    text: "@pebsiee"
+
+# One Markdown file per case study in _case_studies/.
+collections:
+  case_studies:
+    output: true
+    permalink: /work/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: case_studies
+    values:
+      layout: case-study
+  # Older tools that live in this repo. Kept as they are, left out of the sitemap.
+  - scope:
+      path: "bq-editor"
+    values:
+      sitemap: false
+  - scope:
+      path: "dbd"
+    values:
+      sitemap: false
+  - scope:
+      path: "img"
+    values:
+      sitemap: false
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  auto_ids: true
+  smart_quotes: apos,apos,quot,quot
+
+exclude:
+  - README.md
+  - docs/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
