@@ -4,17 +4,6 @@
 #
 # A link with hidden: true is kept here and is not rendered.
 # Paste a year into `year`. Leave it "" until you do. A year containing TODO is not shown.
-- name: Inhabit
-  icon: /img/apps/inhabit.webp
-  blurb: A social habit tracker built with Flutter and Firebase. Groups, chats and notifications keep friends accountable to each other.
-  note: Started as a way for me and some friends to track a mental toughness challenge.
-  year: ""
-  # [WRITE: year]
-  links:
-    - label: App Store
-      url: https://apps.apple.com/gb/app/inhabit-habit-tracker/id1629680396
-      hidden: true
-
 - name: Alexandra Wood
   icon: /img/apps/alexandrawood.webp
   blurb: Customers view and track orders, book appointments, take measurements at home and chat to the team.
