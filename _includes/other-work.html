@@ -7,8 +7,9 @@
       <p>{{ p.blurb }}</p>
       {% if p.note %}<p class="muted small">{{ p.note }}</p>{% endif %}
     </div>
-    <p class="ledger__year">{% if p.year contains 'TODO' %}{% include todo.html text="year" %}{% else %}{{ p.year }}{% endif %}</p>
-    <p class="ledger__links">{% for l in p.links %}<a href="{{ l.url }}">{{ l.label }}</a>{% endfor %}</p>
+    {% assign project_year = p.year | default: "" | strip %}
+    <p class="ledger__year">{% if project_year != "" %}{% unless project_year contains "TODO" %}{{ project_year }}{% endunless %}{% endif %}</p>
+    <p class="ledger__links">{% for l in p.links %}{% unless l.hidden %}<a href="{{ l.url }}">{{ l.label }}</a>{% endunless %}{% endfor %}</p>
   </li>
   {% endfor %}
 </ol>

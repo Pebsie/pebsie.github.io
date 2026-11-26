@@ -12,7 +12,7 @@ body_class: page-home
     <dl class="index-card" aria-label="At a glance">
       <div><dt>Now</dt><dd>Financial adviser</dd></div>
       <div><dt>Before</dt><dd>App developer, freelance and at Pitchero</dd></div>
-      <div><dt>Building</dt><dd>BrawlQuest 2.0</dd></div>
+      <div><dt>Building</dt><dd><a href="{{ '/work/brawlquest-2/' | relative_url }}">BrawlQuest 2.0</a></dd></div>
       <div><dt>Writes</dt><dd>Dart, Lua, Go, JavaScript</dd></div>
     </dl>
   </div>
@@ -22,6 +22,21 @@ body_class: page-home
   <div class="section__head">
     <h2 class="section-label" id="work-h"><span>01</span> Case studies</h2>
     <a class="more" href="{{ '/work/' | relative_url }}">All work</a>
+  </div>
+  {% comment %}
+  [WRITE: one sentence each in _data/approaches.yml, field text, for Written by hand, AI-assisted and Vibe coded.]
+  {% endcomment %}
+  <div class="approaches">
+    <p class="label">How it was built</p>
+    <ul class="approaches__list">
+      {% for a in site.data.approaches %}
+      {% assign approach_text = a.text | default: "" | strip %}
+      <li>
+        <span class="built-tag">{{ a.label }}</span>
+        {% if approach_text != "" %}<p>{{ approach_text }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
   </div>
   <div class="case-grid">
     {% for cs in studies %}{% if cs.featured %}
@@ -48,7 +63,7 @@ body_class: page-home
     <div class="prose">
       <p>I started out writing games in Lua and PHP as a teenager, studied Computer Science at the University of Lincoln, and spent the years after building apps for clients, mostly in Flutter.</p>
       <p>I worked at Pitchero from 2022 to 2023 as the sole app developer on PitcheroGPS, and freelanced for clients, including through Fiverr.</p>
-      <p>{% include todo.html text="a line or two on the move into financial advice, and what you do now" %}</p>
+      {% comment %}[WRITE: a line or two on the move into financial advice, and what you do now. Replace this comment with a paragraph.]{% endcomment %}
     </div>
   </div>
 </section>

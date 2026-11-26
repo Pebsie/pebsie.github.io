@@ -1,0 +1,5 @@
+{%- comment -%}Small "how it was built" label. Renders only for the three allowed values.{%- endcomment -%}
+{%- assign built_values = "Written by hand|AI-assisted|Vibe coded" | split: "|" -%}
+{%- if built_values contains include.built -%}
+<span class="built-tag">{{ include.built }}</span>
+{%- endif -%}

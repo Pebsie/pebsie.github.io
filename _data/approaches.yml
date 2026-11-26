@@ -1,0 +1,13 @@
+# Homepage slot under the case studies. Paste one sentence into `text`.
+# Leave `text` as "" until then. These comments are not shown on the site.
+- label: Written by hand
+  text: ""
+  # [WRITE: one sentence on what written by hand means here]
+
+- label: AI-assisted
+  text: ""
+  # [WRITE: one sentence on what AI-assisted means here]
+
+- label: Vibe coded
+  text: ""
+  # [WRITE: one sentence on what vibe coded means here]
