@@ -12,7 +12,7 @@ body_class: page-case
   <header class="case__head wrap">
     <p class="crumb"><a href="{{ '/work/' | relative_url }}">Work</a> <span aria-hidden="true">/</span> {{ page.kind }}</p>
     <h1 class="case__title">{{ page.title }}</h1>
-    {% if case_summary != "" %}<p class="case__summary">{{ case_summary }}</p>{% endif %}
+    {% if case_summary != "" and page.hide_lede != true %}<p class="case__summary">{{ case_summary }}</p>{% endif %}
     {% if page.follows.title %}
     <p class="chapter-link chapter-link--follow"><span class="label">Continues from</span> <a href="{{ page.follows.url | relative_url }}">{{ page.follows.title }}</a></p>
     {% endif %}

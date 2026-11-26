@@ -246,6 +246,8 @@ ul.plain { list-style: none; margin: 0; padding: 0; }
 .prose blockquote { margin: 1.6em 0; padding-left: 1.2rem; border-left: 3px solid var(--accent); font: 600 1.2rem/1.45 var(--serif); }
 .prose code { font: 400 0.88em/1 var(--mono); background: var(--paper-2); border: 1px solid var(--rule); padding: 0.1em 0.35em; border-radius: var(--radius); }
 .prose img { border: 1px solid var(--ink); border-radius: var(--radius); margin: 1.5em 0 0.5em; }
+.video { margin: 1.5em 0 0.5em; }
+.video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink); border-radius: var(--radius); background: var(--paper-2); }
 .prose hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5em 0; }
 .prose table { border-collapse: collapse; width: 100%; font-size: 0.95rem; margin: 0 0 1.5em; }
 .prose th, .prose td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
