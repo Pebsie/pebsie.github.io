@@ -14,16 +14,21 @@ body_class: page-work
   <div class="section__head"><h2 class="section-label" id="cs-h"><span>01</span> Case studies</h2></div>
   <ol class="work-list">
     {% for cs in studies %}
+    {% assign row_year = cs.year | default: "" | strip %}
+    {% assign row_summary = cs.summary | default: "" | strip %}
     <li class="work-row">
       <a href="{{ cs.url | relative_url }}" class="work-row__link">
         <span class="work-row__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
         <span class="work-row__text">
           <span class="work-row__title">{{ cs.title }}</span>
-          <span class="work-row__summary">{{ cs.summary }}</span>
-          <span class="work-row__stack">{{ cs.stack | join: ' / ' }}</span>
+          {% capture row_built %}{% include built-tag.html built=cs.built %}{% endcapture %}
+          {% assign row_built = row_built | strip %}
+          {% if row_built != "" %}<span class="work-row__built">{{ row_built }}</span>{% endif %}
+          {% if row_summary != "" %}<span class="work-row__summary">{{ row_summary }}</span>{% endif %}
+          {% if cs.stack and cs.stack.size > 0 %}<span class="work-row__stack">{{ cs.stack | join: ' / ' }}</span>{% endif %}
         </span>
-        <span class="work-row__year">{{ cs.year }}</span>
-        <span class="work-row__thumb"><img src="{{ cs.cover | relative_url }}" alt="" loading="lazy" decoding="async" width="480" height="270"></span>
+        <span class="work-row__year">{% if row_year != "" %}{{ row_year }}{% endif %}</span>
+        {% if cs.cover %}<span class="work-row__thumb"><img src="{{ cs.cover | relative_url }}" alt="" loading="lazy" decoding="async" width="480" height="270"></span>{% endif %}
       </a>
     </li>
     {% endfor %}

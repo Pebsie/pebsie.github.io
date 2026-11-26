@@ -1,4 +1,7 @@
 ---
+# Preserved write-up. This folder is not published.
+# The short listing is in _data/projects.yml under "BrawlQuest Content Editor".
+# To publish it as a case study again, move this file back to _case_studies/.
 title: BrawlQuest Content Editor
 kind: Tool
 order: 2

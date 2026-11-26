@@ -1,25 +1,22 @@
 # Smaller projects shown in the "Other work" list on the home and work pages.
 # Give one a case study by adding a file to _case_studies/ and setting
 # case_study: to its file name (without .md).
-- name: Inhabit
-  icon: /img/apps/inhabit.webp
-  blurb: A social habit tracker built with Flutter and Firebase. Groups, chats and notifications keep friends accountable to each other.
-  note: Started as a way for me and some friends to track a mental toughness challenge.
-  year: "TODO year"
-  links:
-    - label: App Store
-      url: https://apps.apple.com/gb/app/inhabit-habit-tracker/id1629680396
-
+#
+# A link with hidden: true is kept here and is not rendered.
+# Paste a year into `year`. Leave it "" until you do. A year containing TODO is not shown.
 - name: Alexandra Wood
   icon: /img/apps/alexandrawood.webp
   blurb: Customers view and track orders, book appointments, take measurements at home and chat to the team.
   note: Built with the client's team from their design, with an admin panel, Supabase and Stripe.
-  year: "TODO year"
+  year: ""
+  # [WRITE: year]
   links:
     - label: App Store
       url: https://apps.apple.com/ca/app/alexandra-wood/id6503619626
+      hidden: true
     - label: Google Play
       url: https://play.google.com/store/apps/details?id=uk.co.alexandrawoodbespoke.app
+      hidden: true
 
 - name: Float
   icon: /img/apps/float.webp
@@ -29,3 +26,15 @@
   links:
     - label: App Store
       url: https://apps.apple.com/gb/app/float-get-essays-done/id1475621146
+
+# Longer write-up, not published: docs/preserved/brawlquest-editor.md
+- name: BrawlQuest Content Editor
+  icon: /assets/img/work/brawlquest-editor/journey.webp
+  blurb: A browser-only editor for everything in BrawlQuest, from quests and dialogue to mobs, loot and the world map. It opens the game's SQLite database in the tab, checks it the way the server would, and commits it to GitHub.
+  note: Live. Used to build BrawlQuest 2.0's content.
+  year: "2026"
+  links:
+    - label: Open the editor
+      url: /brawlquest-editor/
+    - label: Source on GitHub
+      url: https://github.com/Pebsie/brawlquest-editor

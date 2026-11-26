@@ -1,14 +1,24 @@
 {% assign cs = include.cs %}
+{% assign card_year = cs.year | default: "" | strip %}
+{% assign card_summary = cs.summary | default: "" | strip %}
+{% assign card_why = cs.built_why | default: "" | strip %}
 <article class="case-card">
   <a class="case-card__link" href="{{ cs.url | relative_url }}">
+    {% if cs.cover %}
     <div class="case-card__media">
       <img src="{{ cs.cover | relative_url }}" alt="{{ cs.cover_alt | default: cs.title }}" loading="{{ include.loading | default: 'lazy' }}" decoding="async" width="1200" height="675"{% if cs.cover_position %} style="object-position: {{ cs.cover_position }}"{% endif %}>
     </div>
+    {% endif %}
     <div class="case-card__body">
-      <p class="case-card__meta"><span>{{ cs.year }}</span><span>{{ cs.kind }}</span></p>
+      <p class="case-card__meta">{% if card_year != "" %}<span>{{ card_year }}</span>{% endif %}{% if cs.kind %}<span>{{ cs.kind }}</span>{% endif %}</p>
+      {% capture card_built %}{% include built-tag.html built=cs.built %}{% endcapture %}
+      {% assign card_built = card_built | strip %}
+      {% if card_built != "" or card_why != "" %}
+      <p class="case-card__built">{{ card_built }}{% if card_why != "" %}<span class="built-why">{{ card_why }}</span>{% endif %}</p>
+      {% endif %}
       <h3 class="case-card__title">{{ cs.title }}</h3>
-      <p class="case-card__summary">{{ cs.summary }}</p>
-      <p class="case-card__stack">{{ cs.stack | join: ' / ' }}</p>
+      {% if card_summary != "" %}<p class="case-card__summary">{{ card_summary }}</p>{% endif %}
+      {% if cs.stack and cs.stack.size > 0 %}<p class="case-card__stack">{{ cs.stack | join: ' / ' }}</p>{% endif %}
     </div>
   </a>
 </article>

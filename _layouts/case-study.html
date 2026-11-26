@@ -3,27 +3,47 @@ layout: default
 body_class: page-case
 ---
 {% assign all = site.case_studies | sort: 'order' %}
+{% assign case_summary = page.summary | default: "" | strip %}
+{% assign case_why = page.built_why | default: "" | strip %}
+{% assign case_role = page.role | default: "" | strip %}
+{% assign case_year = page.year | default: "" | strip %}
+{% assign case_status = page.status | default: "" | strip %}
 <article class="case"{% if page.accent %} style="--case-accent: {{ page.accent }}"{% endif %}>
   <header class="case__head wrap">
     <p class="crumb"><a href="{{ '/work/' | relative_url }}">Work</a> <span aria-hidden="true">/</span> {{ page.kind }}</p>
     <h1 class="case__title">{{ page.title }}</h1>
-    <p class="case__summary">{{ page.summary }}</p>
+    {% if case_summary != "" and page.hide_lede != true %}<p class="case__summary">{{ case_summary }}</p>{% endif %}
+    {% if page.follows.title %}
+    <p class="chapter-link chapter-link--follow"><span class="label">Continues from</span> <a href="{{ page.follows.url | relative_url }}">{{ page.follows.title }}</a></p>
+    {% endif %}
   </header>
 
+  {% if page.cover %}
   <figure class="case__cover wrap-wide{% if page.cover_pixel %} is-pixel{% endif %}">
     <img src="{{ page.cover | relative_url }}" alt="{{ page.cover_alt | default: page.title }}" width="1600" height="900" fetchpriority="high" decoding="async"{% if page.cover_position %} style="object-position: {{ page.cover_position }}"{% endif %}>
     {% if page.cover_caption %}<figcaption>{{ page.cover_caption }}</figcaption>{% endif %}
   </figure>
+  {% endif %}
 
   <div class="case__layout wrap">
     <aside class="facts" aria-label="Project facts">
       <dl>
-        {% if page.role %}<div><dt>Role</dt><dd>{{ page.role }}</dd></div>{% endif %}
-        {% if page.year %}<div><dt>Year</dt><dd>{{ page.year }}</dd></div>{% endif %}
-        {% if page.status %}<div><dt>Status</dt><dd>{{ page.status }}</dd></div>{% endif %}
-        {% if page.platforms %}<div><dt>Runs on</dt><dd>{{ page.platforms | join: ', ' }}</dd></div>{% endif %}
-        {% if page.stack %}<div><dt>Stack</dt><dd><ul class="chips">{% for s in page.stack %}<li>{{ s }}</li>{% endfor %}</ul></dd></div>{% endif %}
-        {% if page.links %}<div><dt>Links</dt><dd><ul class="plain">{% for l in page.links %}{% assign lp = l.url | slice: 0, 6 %}<li><a href="{% if lp == '/work/' %}{{ l.url | relative_url }}{% else %}{{ l.url }}{% endif %}">{{ l.label }}</a></li>{% endfor %}</ul></dd></div>{% endif %}
+        {% capture case_built %}{% include built-tag.html built=page.built %}{% endcapture %}
+        {% assign case_built = case_built | strip %}
+        {% if case_built != "" %}
+        <div>
+          <dt>How it was built</dt>
+          <dd class="facts__built">{{ case_built }}{% if case_why != "" %}<p class="built-why">{{ case_why }}</p>{% endif %}</dd>
+        </div>
+        {% endif %}
+        {% if case_role != "" %}<div><dt>Role</dt><dd>{{ case_role }}</dd></div>{% endif %}
+        {% if case_year != "" %}<div><dt>Year</dt><dd>{{ case_year }}</dd></div>{% endif %}
+        {% if case_status != "" %}<div><dt>Status</dt><dd>{{ case_status }}</dd></div>{% endif %}
+        {% if page.platforms and page.platforms.size > 0 %}<div><dt>Runs on</dt><dd>{{ page.platforms | join: ', ' }}</dd></div>{% endif %}
+        {% if page.stack and page.stack.size > 0 %}<div><dt>Stack</dt><dd><ul class="chips">{% for s in page.stack %}<li>{{ s }}</li>{% endfor %}</ul></dd></div>{% endif %}
+        {% assign visible_links = 0 %}
+        {% for l in page.links %}{% unless l.hidden %}{% assign visible_links = visible_links | plus: 1 %}{% endunless %}{% endfor %}
+        {% if visible_links > 0 %}<div><dt>Links</dt><dd><ul class="plain">{% for l in page.links %}{% unless l.hidden %}{% assign lp = l.url | slice: 0, 6 %}<li><a href="{% if lp == '/work/' %}{{ l.url | relative_url }}{% else %}{{ l.url }}{% endif %}">{{ l.label }}</a></li>{% endunless %}{% endfor %}</ul></dd></div>{% endif %}
       </dl>
     </aside>
 
@@ -32,18 +52,22 @@ body_class: page-case
     </div>
   </div>
 
-  {% if page.gallery %}
+  {% if page.gallery and page.gallery.size > 0 %}
   <section class="gallery wrap-wide" aria-label="Gallery">
     <h2 class="section-label">Screens</h2>
     <div class="gallery__grid">
       {% for g in page.gallery %}
-      <figure class="gallery__item{% if g.wide %} is-wide{% endif %}{% if g.pixel %} is-pixel{% endif %}">
+      <figure class="gallery__item{% if g.wide %} is-wide{% endif %}{% if g.pixel %} is-pixel{% endif %}{% if g.phone %} is-phone{% endif %}">
         <a href="{{ g.src | relative_url }}"><img src="{{ g.src | relative_url }}" alt="{{ g.alt }}" loading="lazy" decoding="async"{% if g.width %} width="{{ g.width }}" height="{{ g.height }}"{% endif %}></a>
         {% if g.caption %}<figcaption>{{ g.caption }}</figcaption>{% endif %}
       </figure>
       {% endfor %}
     </div>
   </section>
+  {% endif %}
+
+  {% if page.followed_by.title %}
+  <p class="chapter-link chapter-link--end wrap"><span class="label">Continued in</span> <a href="{{ page.followed_by.url | relative_url }}">{{ page.followed_by.title }}</a></p>
   {% endif %}
 
   <nav class="case__next wrap" aria-label="More case studies">

@@ -3,44 +3,32 @@ title: BrawlQuest
 kind: Game
 order: 1
 featured: true
-summary: A pixel-art MMORPG I released on Steam in 2022 and am now rebuilding as BrawlQuest 2.0, with free movement, a faster server, phone support and its own content editor.
+built: Written by hand
+# [WRITE: built_why — optional one line on why this was written by hand. Leave "" until you do.]
+built_why: ""
+summary: &summary "Like all first time game developers, I enjoyed writing Pong and Breakout clones but my eyes always drifted to creating something outlandishly ambitious. My white whale was BrawlQuest: a 2D MMORPG written in LÖVE/Lua with a backend created in Go. I created several iterations of this whilst at college, and then at university, but none of them stuck. That was, until I received some funding in 2021 to work on the project full time with one of my agency employees, and thus was born Luven Interactive."
+description: *summary
+hide_lede: true
 role: Creator. Game design, client, server and tools.
-year: 2017 - now
-status: On Steam for Windows. 2.0 in development.
-platforms: [Windows (Steam), iPhone (2.0, in development)]
-stack: [Lua, LÖVE 11, Go, SQLite, UDP, JavaScript]
+year: 2017 - 2022
+status: On Steam for Windows. Early Access 25 Feb 2021, full release 28 Jun 2022.
+platforms: [Windows (Steam)]
+stack: [Lua, LÖVE 11, Go, SQLite]
 links:
   - label: BrawlQuest on Steam
     url: https://store.steampowered.com/app/871940/
   - label: BrawlQuest site
     url: /bq/
-  - label: Content editor
-    url: /work/brawlquest-editor/
   - label: Armoury
     url: /brawlquest-armory/
-cover: /assets/img/work/brawlquest/cover.webp
+followed_by:
+  title: BrawlQuest 2.0
+  url: /work/brawlquest-2/
+cover: &cover /assets/img/work/brawlquest/cover.webp
+image: *cover
 cover_alt: A slice of the BrawlQuest world around Squall's End, with the BrawlQuest logo over it.
 cover_pixel: true
 gallery:
-  - src: /assets/img/work/brawlquest/v2-fight.webp
-    alt: BrawlQuest 2.0. A warrior fights a group of red-hooded bandits by a river at dusk, with blood on the grass and a quest tracker in the corner.
-    caption: BrawlQuest 2.0. Bandits at dusk, with adventurers, the server's bot players, fighting alongside.
-    width: 1280
-    height: 800
-    wide: true
-    pixel: true
-  - src: /assets/img/work/brawlquest/v2-bridge.webp
-    alt: BrawlQuest 2.0. A mage stands by a wooden bridge next to a giant spider, with the minimap and hotbar showing.
-    caption: 2.0 on desktop.
-    width: 1280
-    height: 720
-    pixel: true
-  - src: /assets/img/work/brawlquest/v2-phone.webp
-    alt: BrawlQuest 2.0 on a phone screen held sideways, with a larger HUD.
-    caption: The same scene laid out for a phone.
-    width: 844
-    height: 390
-    pixel: true
   - src: /assets/img/work/brawlquest/world-map.webp
     alt: The whole BrawlQuest world map, an island with forests, a snowy north, a desert, a walled arena and a dark industrial east.
     caption: The whole world, drawn from the game's own world data.
@@ -60,48 +48,41 @@ gallery:
     height: 720
 ---
 
-## What it is
+## Summary
 
-BrawlQuest is a top-down MMORPG about, in its Steam description's words, "hitting stuff, mining stuff, crafting stuff, building stuff and generally vibing". It's built around simplicity, with no subscription and no intrusive microtransactions. Everything you see on another player was earned by playing.
+Like all first time game developers, I enjoyed writing Pong and Breakout clones but my eyes always drifted to creating something outlandishly ambitious. My white whale was BrawlQuest: a 2D MMORPG written in LÖVE/Lua with a backend created in Go. I created several iterations of this whilst at college, and then at university, but none of them stuck. That was, until I received some funding in 2021 to work on the project full time with one of my agency employees, and thus was born Luven Interactive.
 
-The world has towns, forests, caves, a snowy north and a desert, and bosses that live out in the open world rather than behind instance doors. The original game was made by a team of two.
+My role on the project was to be an everyman; this was before AI coding tools, and so I created the backend Go server entirely by hand, in addition to the major parts of the frontend in Lua. My employee [Danjoe Stubbs](https://www.danstubbs.dev/) worked on the user interface and polish, while I rapidly built out new features and content.
 
-{% include todo.html text="name the other half of the team, if you'd like them credited" %}
+The game launched in Steam early access in February 2021, with a full release following in June 2022. It was a commercial flop, selling just over 100 copies in its lifetime. I've continued to work on it, however, with periodic updates and improvements, and it has garnered a small cult following. In 2026, I'm prepping for the launch of BrawlQuest 2.0: an almost complete rework of many of the game's features.
 
-## How it got here
+## The brief
 
-BrawlQuest has been rewritten a few times. The repos tell the story.
+This was a game I made mostly for myself, the idea being that if I created something I wanted to play I'd naturally find my tribe. To that end the game harkens back to the retro, and is intentionally slow paced and calm. I had a strong preference for atmosphere, and much of my time was spent to that effect; working on lighting, world animations such as leaves blowing off of trees, and ensuring the world felt alive and bustling.
 
-| Year | What happened |
-| --- | --- |
-| 2017 | The first BrawlQuest, in Lua. That repo is public, with a README that calls it pre-university code. |
-| 2018 | A launcher and auto-updater, and a PHP website. |
-| 2019 | Split into a client, a server and a PHP API. |
-| 2020 | The current client (LÖVE, Lua) and API repos start. The API is now written in Go. |
-| 2022 | Released on Steam on 28 June, for Windows. |
-| 2023 | Side experiments, including a remake in Godot. |
-| 2026 | Work starts on BrawlQuest 2.0. |
+Working in 2 dimensions with a backend that updated once a second created many limitations and informed a lot of the design decisions; how would enemies attack, how would boss fights go, how can we allow players to customise their character in meaningful ways when we only have 3 armour slots? I was building within the confines of what I knew, because that was what was most fun, and it created something truly unique.
 
-## BrawlQuest 2.0
+## How it works
 
-The 2022 game moved one tile at a time and ran most of the world on a one-second server tick. 2.0 keeps the world, the art and the spirit, and rebuilds how it moves and fights.
+The front end uses Lua/LÖVE and the backend is entirely Go with SQLite for the database. Dan created a content editor that we could use in-game to immediately ship world updates. Some of the biggest issues we ran into were around that SQLite database; the limitations in terms of how many writes can be active at once (1), and there were some major inefficiencies in both the way the front end and back end handled networking that caused issues for players overseas (the server was hosted on a VPS in London). This was very much part of the continual work I'd do, from 2021 to 2026, to make things function better.
 
-- **Free movement.** Players and enemies move freely with wall collision, rather than hopping between tiles.
-- **Combat off the tick.** Enemy AI and combat run faster than the old tick, with positions, hotbar use and level-ups sent over UDP. Other players and NPCs are smoothed with snapshot interpolation.
-- **Feel.** Swing arcs, knockback, stamina and sprint, crits with a screen shake, and enemies that crumple when they die.
-- **Adventurers.** The server fills the world with bot players who quest, hunt, chat a little, wave back, go sailing and can be hired. Their numbers scale so the world feels busy without drowning out real players.
-- **A living world.** A 30-minute day and night cycle, mobs that only come out after dark, NPCs with daily routines, and seasonal dressing like snow at Christmas.
-- **Phones.** An iPhone build with touch controls: tap to move, tap an enemy to fight, and a layout sized for a small screen. Singleplayer runs a server built into the app.
-- **Accounts.** Play as a guest, then keep your character with a code sent by email.
+The game peaked at 30 concurrent players, and sold just over 100 copies in its lifetime. We transitioned to free to play, and ended up with over 1000 players, but never hit that concurrent player count again. The fascinating thing is the retention graph: people either played the game for less than 20 minutes, or over 4 hours. There was practically no in-between. It either immediately clicked for you, and you became addicted fast, or you weren't interested and moved on.
 
-### Content as data
+I created a YouTube video documenting the game here: [https://www.youtube.com/watch?v=E3O0EmvyrDA](https://www.youtube.com/watch?v=E3O0EmvyrDA)
 
-All of the game's content lives in one SQLite database: items, enemies, NPCs, dialogue, quests, loot tables and the world map itself. The Go server reads it, and I edit it with a browser-based [content editor]({{ '/work/brawlquest-editor/' | relative_url }}) I built for the job. Changes to the live game go out as small SQL migrations, each with a rollback.
+<figure class="video">
+<iframe src="https://www.youtube.com/embed/E3O0EmvyrDA" title="BrawlQuest" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+</figure>
 
-### Tested headless
+## Design highlight: Enchanting
 
-Most new systems come with headless tests on both sides: Go tests on the server for movement, stamina, combat timing and snapshots, and Lua tests that run the client without a window. That's what makes it possible to change combat this much without breaking the rest of the game.
+One of the most unique features we added was the Enchanting system. The level cap was 40, and when you hit 40 you could keep playing using all your end-game gear and grind bosses (bosses dropped 1 Old World Crystal each per day, which could be used to create Legendary armour. You needed 100 OWC per gear piece, and there were 8 bosses. The grind was real and calculated!!) or you could choose to Enchant a single item piece.
 
+Enchanting would reset you to Level 1, but apply a +40 stat bonus to any piece of gear. For mounts it would boost movement speed by 40%. People developed serious strategies: many would enchant their best gear, only to realise that it wasn't usable until level 40. Because you reset to level 1 and needed to grind out the levels again, it began to make sense to start enchanting early game gear, so many people would enchant the default weapon from +1 ATK to +41 ATK, alongside the default armour so you could take on tougher enemies from level 1. Of course, those enemies also provided more XP, and we allowed overlevelling: so one enemy could theoretically take you up several levels at once.
+
+This feature was golden: people got seriously addicted to how satisfying the gameplay loop was, and many players ended up spending over 200 hours on the game. [One player enchanted 53 items](https://tomlock.me/brawlquest-armory/#/character/410)
+
+{% comment %}
 ## What I'd point to
-
-{% include todo.html text="one or two lines on what you're proudest of, or what you learnt. Player numbers or reviews only if you want them here." %}
+[WRITE: what you'd point a reader at.]
+{% endcomment %}

@@ -1,1 +1,5 @@
-<span class="todo" title="Fill this in before going live">TODO: {{ include.text }}</span>
+{%- comment -%}
+  Not rendered. Older pages called this with text="...".
+  The note stays in the source file and is not shown on the site.
+  New notes: {% comment %}[WRITE: what to write]{% endcomment %}
+{%- endcomment -%}

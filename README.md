@@ -23,7 +23,7 @@ Personal site for Thomas Lock. Plain Jekyll, built by GitHub Pages itself: no Ac
 
 1. Copy `docs/case-study-template.md` to `_case_studies/<slug>.md`. The slug becomes the address: `_case_studies/inhabit.md` is served at `/work/inhabit/`.
 2. Put the images in `assets/img/work/<slug>/`. WebP or JPEG, about 1600px wide at most. A 16:9 cover looks best.
-3. Fill in the front matter (the block between the `---` lines) and write the body in Markdown.
+3. Fill in the front matter (the block between the `---` lines) and write the body in Markdown. Copy the section headings from the template. A `[WRITE:]` note inside `{% comment %}` is for you and is left off the page.
 4. Set `order:` to place it on the work page (1 is first). Set `featured: true` to show it on the home page too.
 5. If the project is also in `_data/projects.yml`, either remove it from there or add `case_study: <slug>` so its name links to the case study.
 6. Commit and push.
@@ -33,22 +33,34 @@ Front matter fields:
 | Field | Needed | Notes |
 | --- | --- | --- |
 | `title` | yes | |
-| `summary` | yes | One or two sentences. Used on cards and for link previews. |
+| `summary` | yes | One or two sentences. Used on cards and for link previews. Leave `""` until it's written. An empty summary is not shown. Keep the `&summary` marker; `description` copies that line. |
 | `kind` | yes | A one-word label: App, Game, Tool, Website. |
+| `built` | yes | `Written by hand`, `AI-assisted`, or `Vibe coded`. Anything else is not shown. |
+| `built_why` | no | One line on why that approach. Leave `""` until it's written. Shown under the label. |
 | `year` | yes | `"2024"` or `2022 - 2023`. Quote a bare year. |
 | `order` | yes | Position on the work page. |
-| `cover` | yes | Path to the cover image. |
+| `cover` | yes | Path to the cover image. Leave the line commented out until the file exists. |
 | `cover_alt` | yes | What the cover shows, for screen readers. |
-| `role`, `status` | no | Short text. |
+| `role`, `status` | no | Short text. Leave `""` until it's written. |
 | `platforms`, `stack` | no | Lists, e.g. `[Flutter, Firebase]`. |
-| `links` | no | List of `label` and `url`. |
-| `gallery` | no | List of `src`, `alt`, `caption`, and optional `width`, `height`, `wide: true` (full width) and `pixel: true` (keeps pixel art sharp). |
+| `links` | no | List of `label` and `url`. Add `hidden: true` to keep a link without showing it. |
+| `follows`, `followed_by` | no | `{ title, url }` cross-links. `follows` opens the page. `followed_by` closes it. |
+| `gallery` | no | List of `src`, `alt`, `caption`, and optional `width`, `height`, `wide: true` (full width), `phone: true` (phone-width column, not stretched) and `pixel: true` (keeps pixel art sharp). Rendered under Screens. |
 | `featured` | no | `true` to show on the home page. |
 | `cover_pixel` | no | `true` for a pixel-art cover. |
+| `cover_caption` | no | Caption under the cover. |
 | `cover_position` | no | Which part of the cover to keep when it's cropped, e.g. `left top`. |
 | `accent` | no | A CSS colour for this case study's links. |
 
-Inside the body you can mark something unfinished with `{% raw %}{% include todo.html text="what's missing" %}{% endraw %}`. It shows as a yellow striped box, so search the site for `TODO` before going live.
+The body sections, in order: The brief, How it works, Testing and trade-offs, What I'd point to. Screens come from `gallery`.
+
+Notes to yourself go in a Liquid comment, which is removed when the site is built and does not show on the page:
+
+```
+{% comment %}[WRITE: what you still need to write]{% endcomment %}
+```
+
+An empty field, or a field left as `""`, is not shown either. The old yellow TODO box is not used.
 
 ## Run it locally
 

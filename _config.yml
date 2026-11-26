@@ -3,10 +3,16 @@ title: Thomas Lock
 description: Apps, games and tools by Thomas Lock.
 url: https://tomlock.me
 baseurl: ""   # Stays empty for tomlock.me. The /v2 preview repo (Pebsie/v2) uses its own config with baseurl /v2.
-# preview: true adds a noindex robots tag. Only the preview repo sets it.
+# preview: true adds a noindex robots tag (_includes/head.html). Leave that tag in place.
+# This file keeps preview false. The tomlock.me/v2 repo (Pebsie/v2) sets preview: true,
+# so the preview stays noindex until launch.
 preview: false
 lang: en-GB
-author: Thomas Lock
+# twitter here is twitter:creator. A plain string is treated as the name, which
+# was rendering as @Thomas Lock.
+author:
+  name: Thomas Lock
+  twitter: pebsiee
 email: contact@tomlock.me
 twitter:
   username: pebsiee
@@ -44,6 +50,8 @@ defaults:
       type: case_studies
     values:
       layout: case-study
+      # So an opening heading is not used as the link-preview text.
+      excerpt_separator: "<!--more-->"
   # Older tools that live in this repo. Kept as they are, left out of the sitemap.
   - scope:
       path: "bq-editor"
