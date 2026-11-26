@@ -8,13 +8,17 @@ body_class: page-home
   <p class="label hero__label">Thomas Lock &middot; Essex, UK</p>
   <h1 class="hero__title">I make apps, games <em>and the tools behind them.</em></h1>
   <div class="hero__grid">
-    <p class="hero__intro">I'm Tom. I've built apps with Flutter since 2019 and helped launch over 100 projects, as well as founding a startup agency. These days I work as a financial adviser, and in my spare time I'm bringing my MMORPG, <a href="{{ '/work/brawlquest/' | relative_url }}">BrawlQuest</a>, back to life.</p>
     <dl class="index-card" aria-label="At a glance">
       <div><dt>Now</dt><dd>Financial adviser</dd></div>
       <div><dt>Before</dt><dd>App developer, freelance and at Pitchero</dd></div>
       <div><dt>Building</dt><dd><a href="{{ '/work/brawlquest-2/' | relative_url }}">BrawlQuest 2.0</a></dd></div>
       <div><dt>Writes</dt><dd>Dart, Lua, Go, JavaScript</dd></div>
     </dl>
+    <div class="hero__intro">
+      <p>Hello there. I'm Tom. I'm a software engineer, game developer, musician and finance enthusiast. I began writing code when I was 8 years old to build 2D games in Game Maker 6.0, then branched out to C#, Lua, Basic, Go, PHP, TypeScript and C++. In 2018 I founded an app development agency which shipped over 100 orders using Dart/Flutter. I've since worked on wearables (using BLE) and software for financial advisers, before studying and becoming a financial adviser to see how the industry functions.</p>
+      <p>As a long-time AI skeptic, I've recently embraced the use of AI in development, and it's allowed me to push my projects beyond what I thought was possible. This has, in turn, renewed my passion for software engineering and game development, and I'm excited to work on projects with fully hand-written code, AI-assisted code, and in some cases entirely vibe coded projects (it's fun!)</p>
+      <p>What should we build together?</p>
+    </div>
   </div>
 </section>
 
@@ -22,21 +26,6 @@ body_class: page-home
   <div class="section__head">
     <h2 class="section-label" id="work-h"><span>01</span> Case studies</h2>
     <a class="more" href="{{ '/work/' | relative_url }}">All work</a>
-  </div>
-  {% comment %}
-  [WRITE: one sentence each in _data/approaches.yml, field text, for Written by hand, AI-assisted and Vibe coded.]
-  {% endcomment %}
-  <div class="approaches">
-    <p class="label">How it was built</p>
-    <ul class="approaches__list">
-      {% for a in site.data.approaches %}
-      {% assign approach_text = a.text | default: "" | strip %}
-      <li>
-        <span class="built-tag">{{ a.label }}</span>
-        {% if approach_text != "" %}<p>{{ approach_text }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
   </div>
   <div class="case-grid">
     {% for cs in studies %}{% if cs.featured %}

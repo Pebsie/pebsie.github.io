@@ -10,7 +10,6 @@ Personal site for Thomas Lock. Plain Jekyll, built by GitHub Pages itself: no Ac
 | `work/index.html` | Work index: every case study, then the other apps |
 | `_case_studies/` | One Markdown file per case study |
 | `_data/projects.yml` | Smaller apps listed under "Other apps" |
-| `_data/approaches.yml` | The three "how it was built" lines on the home page |
 | `_data/testimonials.yml` | Quotes on the home page |
 | `_layouts/`, `_includes/` | Templates |
 | `assets/css/site.css` | The only stylesheet |
