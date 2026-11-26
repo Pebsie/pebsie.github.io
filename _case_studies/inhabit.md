@@ -21,13 +21,20 @@ links:
 # cover: &cover /assets/img/work/inhabit/cover.webp
 # image: *cover
 # cover_alt: [WRITE: what the cover image shows]
-# Screens. One block per image. Files go in assets/img/work/inhabit/.
-# gallery:
-#   - src: /assets/img/work/inhabit/screen-1.webp
+gallery:
+  - src: /assets/img/work/inhabit/home.webp
+    alt: Inhabit home screen on an iPhone, with this week's streaks, today's habits and the daily progress photo.
+    caption: "Home: today's habits, streaks and the daily progress photo"
+    width: 981
+    height: 2124
+    phone: true
+# More screens. Uncomment a block per image. Files go in assets/img/work/inhabit/.
+#   - src: /assets/img/work/inhabit/screen-2.webp
 #     alt: [WRITE: what this screenshot shows]
 #     caption: [WRITE: a short caption]
-#     width: 1600
-#     height: 900
+#     width: 981
+#     height: 2124
+#     phone: true
 ---
 
 ## Summary

@@ -259,7 +259,8 @@ ul.plain { list-style: none; margin: 0; padding: 0; }
 .gallery__grid { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); }
 @media (min-width: 46rem) { .gallery__grid { grid-template-columns: 1fr 1fr; } .gallery__item.is-wide { grid-column: 1 / -1; } }
 .gallery__item { margin: 0; }
-.gallery__item img { width: 100%; border: 1px solid var(--ink); border-radius: var(--radius); background: var(--paper-2); }
+.gallery__item.is-phone { width: 100%; max-width: 20rem; justify-self: start; align-self: start; }
+.gallery__item img { width: 100%; height: auto; border: 1px solid var(--ink); border-radius: var(--radius); background: var(--paper-2); }
 .gallery__item.is-pixel img { image-rendering: pixelated; }
 
 .case__next { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 1.5rem; padding-top: clamp(3rem, 7vw, 5rem); padding-bottom: clamp(3rem, 7vw, 5rem); }

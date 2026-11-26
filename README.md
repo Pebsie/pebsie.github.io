@@ -45,7 +45,7 @@ Front matter fields:
 | `platforms`, `stack` | no | Lists, e.g. `[Flutter, Firebase]`. |
 | `links` | no | List of `label` and `url`. Add `hidden: true` to keep a link without showing it. |
 | `follows`, `followed_by` | no | `{ title, url }` cross-links. `follows` opens the page. `followed_by` closes it. |
-| `gallery` | no | List of `src`, `alt`, `caption`, and optional `width`, `height`, `wide: true` (full width) and `pixel: true` (keeps pixel art sharp). Rendered under Screens. |
+| `gallery` | no | List of `src`, `alt`, `caption`, and optional `width`, `height`, `wide: true` (full width), `phone: true` (phone-width column, not stretched) and `pixel: true` (keeps pixel art sharp). Rendered under Screens. |
 | `featured` | no | `true` to show on the home page. |
 | `cover_pixel` | no | `true` for a pixel-art cover. |
 | `cover_caption` | no | Caption under the cover. |

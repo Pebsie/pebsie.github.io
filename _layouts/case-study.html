@@ -57,7 +57,7 @@ body_class: page-case
     <h2 class="section-label">Screens</h2>
     <div class="gallery__grid">
       {% for g in page.gallery %}
-      <figure class="gallery__item{% if g.wide %} is-wide{% endif %}{% if g.pixel %} is-pixel{% endif %}">
+      <figure class="gallery__item{% if g.wide %} is-wide{% endif %}{% if g.pixel %} is-pixel{% endif %}{% if g.phone %} is-phone{% endif %}">
         <a href="{{ g.src | relative_url }}"><img src="{{ g.src | relative_url }}" alt="{{ g.alt }}" loading="lazy" decoding="async"{% if g.width %} width="{{ g.width }}" height="{{ g.height }}"{% endif %}></a>
         {% if g.caption %}<figcaption>{{ g.caption }}</figcaption>{% endif %}
       </figure>
